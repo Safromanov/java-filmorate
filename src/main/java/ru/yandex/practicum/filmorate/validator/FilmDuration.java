@@ -9,7 +9,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = DurationValidator.class)
 @Documented
-public @interface DurationE {
+public @interface FilmDuration {
     String message() default "{Duration.invalid}";
 
     Class<?>[] groups() default { };

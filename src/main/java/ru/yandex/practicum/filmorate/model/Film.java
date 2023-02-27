@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
-import ru.yandex.practicum.filmorate.validator.DurationE;
+import ru.yandex.practicum.filmorate.validator.FilmDuration;
 import ru.yandex.practicum.filmorate.validator.FilmReleaseDate;
 
 import java.time.Duration;
@@ -23,7 +23,7 @@ public class Film {
     @FilmReleaseDate
     LocalDate releaseDate;
     @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT)
-    @DurationE
+    @FilmDuration
     Duration duration;
 
     public Film (String name, String description, LocalDate releaseDate, Duration duration) {
