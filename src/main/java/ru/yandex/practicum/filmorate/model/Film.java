@@ -2,12 +2,13 @@ package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import ru.yandex.practicum.filmorate.validator.FilmDuration;
 import ru.yandex.practicum.filmorate.validator.FilmReleaseDate;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.time.Duration;
 import java.time.LocalDate;
 

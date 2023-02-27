@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.web.bind.annotation.*;
@@ -9,6 +8,7 @@ import ru.yandex.practicum.filmorate.exception.InvalidEmailException;
 import ru.yandex.practicum.filmorate.model.GeneratorId;
 import ru.yandex.practicum.filmorate.model.User;
 
+import javax.validation.Valid;
 import java.util.*;
 
 @Slf4j
