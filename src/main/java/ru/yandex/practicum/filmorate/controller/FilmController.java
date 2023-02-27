@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.GeneratorId;
 
@@ -32,8 +33,9 @@ public class FilmController {
 
     @PutMapping
     public Film update(@Valid @RequestBody Film film){
-        if (!films.containsKey(film.getId())) throw new IllegalArgumentException();
+        if (!films.containsKey(film.getId())) throw new ValidationException("Обновляемый фильм отсутствует в базе");
         films.put(film.getId(), film);
+        log.debug("Информация о фильме обновлена: {}", film);
         return film;
     }
 }

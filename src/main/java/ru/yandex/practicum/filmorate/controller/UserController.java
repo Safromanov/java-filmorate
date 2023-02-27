@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.InvalidEmailException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 
 import ru.yandex.practicum.filmorate.model.GeneratorId;
 import ru.yandex.practicum.filmorate.model.User;
@@ -25,7 +25,7 @@ public class UserController {
 
     @PostMapping
     public User create(@Valid @RequestBody User user) {
-        if (user.getName() == null || user.getName().isBlank()) user.setName(user.getLogin());
+        if (user.getName() == null || user.getName().isEmpty()) user.setName(user.getLogin());
         user.setId(GeneratorId.getIdUsers());
         log.debug("Новый пользователь: {}", user);
         users.put(user.getId(), user);
@@ -35,8 +35,9 @@ public class UserController {
     @PutMapping
     public User update(@Valid @RequestBody User user){
         if (!users.containsKey(user.getId()))
-             throw new InvalidEmailException();
+             throw new ValidationException("Пользователя для обновления нет в базе данных");
         users.put(user.getId(), user);
+        log.debug("Пользователь обновлён {}", user);
         return user;
     }
 }
