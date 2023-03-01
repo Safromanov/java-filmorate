@@ -20,7 +20,7 @@ public class UserController {
     private final Map<Integer, User> users;
     private final GeneratorId generatorId;
 
-        @GetMapping
+    @GetMapping
     public Collection<User> findAll() {
         log.debug("Текущее количество пользователей: {}", users.size());
         return users.values();

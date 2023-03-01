@@ -11,7 +11,7 @@ public class User {
 
     private int id;
     @Email
-    @NotNull
+    @NotEmpty
     private String email;
     @NotBlank
     @Pattern(regexp = "\\S+")
