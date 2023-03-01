@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.web.bind.annotation.*;
@@ -14,15 +15,12 @@ import java.util.*;
 @Slf4j
 @RestController
 @RequestMapping("/users")
+@RequiredArgsConstructor
 public class UserController {
-    private final Map<Integer, User> users = new HashMap<>();
+    private final Map<Integer, User> users;
     private final GeneratorId generatorId;
 
-    public UserController(GeneratorId generatorId) {
-        this.generatorId = generatorId;
-    }
-
-    @GetMapping
+        @GetMapping
     public Collection<User> findAll() {
         log.debug("Текущее количество пользователей: {}", users.size());
         return users.values();
