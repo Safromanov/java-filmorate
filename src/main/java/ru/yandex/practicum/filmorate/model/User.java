@@ -5,21 +5,23 @@ import lombok.Data;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 import java.time.LocalDate;
 
 @Data
 public class User {
 
-    int id;
+    private int id;
     @Email
-    String email;
+    private String email;
     @NotBlank
-    String login;
+    private String login;
 
-    String name;
+    private String name;
     @Past
-    LocalDate birthday;
+    @NotNull
+    private LocalDate birthday;
 
     public User(String email, String login, String name, LocalDate birthday) {
         this.id = -1;
@@ -28,6 +30,5 @@ public class User {
         this.name = name;
         this.birthday = birthday;
     }
-
 
 }

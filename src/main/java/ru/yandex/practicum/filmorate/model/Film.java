@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.validator.FilmDuration;
 import ru.yandex.practicum.filmorate.validator.FilmReleaseDate;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -15,17 +16,19 @@ import java.time.LocalDate;
 
 @Data
 public class Film {
-    int id;
+    private int id;
     @NotBlank
-    String name;
-
+    private String name;
+    @NotNull
     @Size(max = 200)
-    String description;
+    private String description;
+    @NotNull
     @FilmReleaseDate
-    LocalDate releaseDate;
+    private LocalDate releaseDate;
+    @NotNull
     @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT)
     @FilmDuration
-    Duration duration;
+    private Duration duration;
 
     public Film (String name, String description, LocalDate releaseDate, Duration duration) {
         this.id = -1;

@@ -10,7 +10,7 @@ class DurationValidator implements ConstraintValidator<FilmDuration, Duration> {
 
     @Override
     public boolean isValid(Duration duration, ConstraintValidatorContext context) {
-        return !duration.isNegative();
-
+        return duration.getSeconds() >= 1;
     }
+
 }
