@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.GeneratorId;
 
-
 import javax.validation.Valid;
 import java.util.*;
 
@@ -43,4 +42,5 @@ public class FilmController {
         log.debug("Фильм обновлён: {}", film);
         return film;
     }
+
 }
