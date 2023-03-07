@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.validator;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
+import javax.validation.constraints.Past;
 
 import java.lang.annotation.*;
 
@@ -17,3 +18,4 @@ public @interface FilmReleaseDate {
     Class<? extends Payload>[] payload() default { };
 
 }
+

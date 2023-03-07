@@ -7,9 +7,9 @@ import org.springframework.stereotype.Component;
 @Component
 @Scope("prototype")
 public class GeneratorId {
-    private int id = 0;
+    private long id = 0;
 
-    public int getId() {
+    public long getId() {
        return ++id;
     }
 
