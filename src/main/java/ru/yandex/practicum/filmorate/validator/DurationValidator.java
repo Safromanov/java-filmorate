@@ -5,7 +5,6 @@ import javax.validation.ConstraintValidator;
 
 import java.time.Duration;
 
-
 class DurationValidator implements ConstraintValidator<FilmDuration, Duration> {
 
     @Override
