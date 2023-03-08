@@ -17,5 +17,4 @@ public class ErrorHandler {
         return List.of(e.getMessage());
     }
 
-
 }

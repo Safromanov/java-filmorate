@@ -3,9 +3,6 @@ package ru.yandex.practicum.filmorate.storage.user;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.GeneratorId;
 import ru.yandex.practicum.filmorate.model.User;
@@ -19,7 +16,7 @@ public class InMemoryUserStorage implements UserStorage{
     private final Map<Long, User> users;
     private final GeneratorId generatorId;
 
-    @GetMapping
+
     public Collection<User> findAll() {
         log.debug("Текущее количество пользователей: {}", users.size());
         return users.values();
@@ -32,6 +29,7 @@ public class InMemoryUserStorage implements UserStorage{
         return user;
     }
 
+    @Override
     public List<User> getFriends(long id){
         List<User> friends = new ArrayList<>();
         for (var friendId: users.get(id).getFriends())
@@ -40,9 +38,9 @@ public class InMemoryUserStorage implements UserStorage{
     }
 
     @Override
-    public List<User> getCommonFriends(long id1, long id2) {
-        var friendsOfOne = getUser(id1).getFriends();
-        var friendsAnother = getUser(id2).getFriends();
+    public List<User> getCommonFriends(long userId, long friendId) {
+        var friendsOfOne = getUser(userId).getFriends();
+        var friendsAnother = getUser(friendId).getFriends();
         var commonFriends = new ArrayList<User>();
         for (var idFriendOfOne : friendsOfOne)
             if (friendsAnother.contains(idFriendOfOne))
@@ -50,7 +48,7 @@ public class InMemoryUserStorage implements UserStorage{
         return commonFriends; 
     }
 
-    @PostMapping
+    @Override
     public User create(User user) {
         changeEmptyUserName(user);
         user.setId(generatorId.getId());
@@ -59,7 +57,7 @@ public class InMemoryUserStorage implements UserStorage{
         return user;
     }
 
-    @PutMapping
+    @Override
     public User update(User user) {
         var updatedUser = users.get(user.getId());
         if (updatedUser == null)
