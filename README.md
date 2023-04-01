@@ -13,8 +13,8 @@ WHERE ganre_name = "Комедия"
 ### Запрос списка друзей пользователя 
 SELECT name_user
 FROM users u1
-LEFT JOIN friendship f on f.user_id = u1.user_id  
-LEFT JOIN users u2 on f.friend_id = u2.user_id  
+LEFT JOIN friendship AS f ON f.user_id = u1.user_id  
+LEFT JOIN users AS u2 ON f.friend_id = u2.user_id  
 WHERE f.is_aprooved = true and user_id = 1
 
 
