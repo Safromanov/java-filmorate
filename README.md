@@ -1,6 +1,13 @@
 # java-filmorate
-Template repository for Filmorate project.
+Схема БД
 ![Схема БД](src/main/resources/filmorate_DB.jpg)
 
-SELECT *
-FROM film
+#Запрос поиска фильмов по жанру
+SELECT film_name
+FROM films f
+LEFT JOIN ganre_film gf on f.film_id = gf.film_id 
+LEFT JOIN ganre g on g.ganre_id = gf.film_id 
+WHERE ganre_name = "Комедия"
+
+
+
