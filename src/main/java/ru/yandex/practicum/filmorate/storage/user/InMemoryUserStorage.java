@@ -33,20 +33,20 @@ public class InMemoryUserStorage implements UserStorage{
     @Override
     public List<User> getFriends(long id){
         List<User> friends = new ArrayList<>();
-        for (var friendId: users.get(id).getFriends())
+        for (var friendId: users.get(id).getFriends().keySet())
             friends.add(users.get(friendId));
         return friends;
     }
 
     @Override
     public List<User> getCommonFriends(long userId, long friendId) {
-        var friendsOfOne = getUser(userId).getFriends();
-        var friendsAnother = getUser(friendId).getFriends();
+        var friendsOfOne = getUser(userId).getFriends().keySet();
+        var friendsAnother = getUser(friendId).getFriends().keySet();
         var commonFriends = new ArrayList<User>();
         for (var idFriendOfOne : friendsOfOne)
             if (friendsAnother.contains(idFriendOfOne))
                 commonFriends.add(users.get(idFriendOfOne));
-        return commonFriends; 
+        return commonFriends;
     }
 
     @Override

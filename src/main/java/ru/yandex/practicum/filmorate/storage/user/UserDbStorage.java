@@ -2,12 +2,14 @@ package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Primary;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import javax.sql.RowSet;
@@ -17,12 +19,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.List;
 
+import static ru.yandex.practicum.filmorate.model.User.makeUser;
+
 @Primary
 @Component
 @AllArgsConstructor
 public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
-
+ //   private final FriendsStorage friendsDbStorage;
 
     @Override
     public Collection<User> findAll() {
@@ -50,16 +54,22 @@ public class UserDbStorage implements UserStorage {
         return user;
     }
 
-
     @Override
     public User update(User user) {
         String sql = "UPDATE USERS SET LOGIN=?, USER_NAME=?, EMAIL=?, BIRTHDAY=? WHERE USER_ID=?;";
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
         PreparedStatementCreator preparedStatementCreator = con -> {
             var stmt = makeStatement(con, user, sql);
             stmt.setString(5, String.valueOf(user.getId()));
             return stmt;
         };
-        jdbcTemplate.update(preparedStatementCreator);
+        try {
+            jdbcTemplate.update(preparedStatementCreator, keyHolder);
+        } catch (Exception e) {
+            throw new ValidationException("Пользователя не существует");
+        }
         return user;
     }
 
@@ -74,9 +84,13 @@ public class UserDbStorage implements UserStorage {
             return stmt;
         };
 
-        return jdbcTemplate.query(
-                preparedStatementCreator,
-                rowMapper).get(0);
+        try {
+            return jdbcTemplate.query(
+                    preparedStatementCreator,
+                    rowMapper).get(0);
+        } catch (Exception e) {
+            throw new ValidationException("Пользователя не существует");
+        }
     }
 
     @Override
@@ -88,6 +102,7 @@ public class UserDbStorage implements UserStorage {
     public List<User> getCommonFriends(long userId, long friendId) {
         return null;
     }
+
     private PreparedStatement makeStatement(Connection con, User user, String sql) throws SQLException {
         PreparedStatement stmt = con.prepareStatement(sql, new String[]{"user_id"});
         stmt.setString(1, user.getLogin());
@@ -96,13 +111,14 @@ public class UserDbStorage implements UserStorage {
         stmt.setDate(4, Date.valueOf(user.getBirthday()));
         return stmt;
     }
-    private User makeUser(ResultSet resultSet) throws SQLException {
-        User user = new User(
-                resultSet.getString("email"),
-                resultSet.getString("login"),
-                resultSet.getString("user_name"),
-                LocalDate.parse(resultSet.getString("birthday"), DateTimeFormatter.ISO_DATE));
-        user.setId(Long.parseLong(resultSet.getString("user_id")));
-        return user;
-    }
+
+//    private User makeUser(ResultSet resultSet) throws SQLException {
+//        User user = new User(
+//                resultSet.getString("email"),
+//                resultSet.getString("login"),
+//                resultSet.getString("user_name"),
+//                LocalDate.parse(resultSet.getString("birthday"), DateTimeFormatter.ISO_DATE));
+//        user.setId(Long.parseLong(resultSet.getString("user_id")));
+//        return user;
+//    }
 }
