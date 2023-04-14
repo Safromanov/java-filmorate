@@ -30,9 +30,9 @@ public class Film {
     @FilmReleaseDate
     private LocalDate releaseDate;
 
-   // private MPA mpa;
-    private Integer[] mpaId;
-    private String genre;
+    private MPA mpa;
+   // private int mpaId;
+    private List<Genre> genres;
     @NotNull
     @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT)
     @FilmDuration
@@ -53,15 +53,17 @@ public class Film {
         var id = Long.parseLong(resultSet.getString("film_id"));
         var film_name = resultSet.getString("film_name");
         var description = resultSet.getString("description");
-        var genre = resultSet.getString("genre");
-        var mpaId = resultSet.;
+     //   var genre = resultSet.getString("genre");
+
+      //  var mpaId = (int[])resultSet.getArray("genre").getArray();
+     //   System.out.println(mpaId.length);
         var releaseDate = resultSet.getDate("release_date").toLocalDate();
         return builder()
                 .id(id)
                 .name(film_name)
                 .description(description)
-                .genre(genre)
-                .mpaId((Integer[]) mpaId)
+            //    .genre(genre)
+                //.mpaId(mpaId)
                 .releaseDate(releaseDate)
                 .build();
     }

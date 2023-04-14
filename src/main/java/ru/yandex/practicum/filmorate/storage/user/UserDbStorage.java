@@ -3,9 +3,11 @@ package ru.yandex.practicum.filmorate.storage.user;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
@@ -34,7 +36,6 @@ public class UserDbStorage implements UserStorage {
         RowMapper<User> rowMapper = (resultSet, rowNum) -> makeUser(resultSet);
 
         PreparedStatementCreator preparedStatementCreator = con -> con.prepareStatement(sql, new String[]{"user_id"});
-
         return jdbcTemplate.query(
                 preparedStatementCreator,
                 rowMapper);
@@ -57,9 +58,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public User update(User user) {
         String sql = "UPDATE USERS SET LOGIN=?, USER_NAME=?, EMAIL=?, BIRTHDAY=? WHERE USER_ID=?;";
-
         KeyHolder keyHolder = new GeneratedKeyHolder();
-
         PreparedStatementCreator preparedStatementCreator = con -> {
             var stmt = makeStatement(con, user, sql);
             stmt.setString(5, String.valueOf(user.getId()));
@@ -89,7 +88,7 @@ public class UserDbStorage implements UserStorage {
                     preparedStatementCreator,
                     rowMapper).get(0);
         } catch (Exception e) {
-            throw new ValidationException("Пользователя не существует");
+            throw new ValidationException(e.getLocalizedMessage());
         }
     }
 
@@ -109,6 +108,7 @@ public class UserDbStorage implements UserStorage {
         stmt.setString(2, user.getName());
         stmt.setString(3, user.getEmail());
         stmt.setDate(4, Date.valueOf(user.getBirthday()));
+
         return stmt;
     }
 

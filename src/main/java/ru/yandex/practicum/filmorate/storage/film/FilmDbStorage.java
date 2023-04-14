@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
@@ -14,6 +15,7 @@ import ru.yandex.practicum.filmorate.model.MPA;
 
 
 import java.sql.*;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -25,6 +27,7 @@ import static ru.yandex.practicum.filmorate.model.Film.makeFilm;
 @AllArgsConstructor
 public class FilmDbStorage implements  FilmStorage{
     JdbcTemplate jdbcTemplate;
+   // SimpleJdbcInsert simpleJdbcInsert;
     @Override
     public Collection<Film> findAll() {
         String sql = "SELECT * FROM films";
@@ -37,9 +40,12 @@ public class FilmDbStorage implements  FilmStorage{
 
     @Override
     public Film create(Film film) {
-        String sql = "INSERT INTO films (FILM_NAME,  DESCRIPTION, MPA_ID, RELEASE_DATE, DURATION_MINUTE) " +
-                "VALUES (?,?,?,?,?);";
-
+        System.out.println(film.getMpa());
+//        String sql = "INSERT INTO films (FILM_NAME,  DESCRIPTION, MPA_ID, RELEASE_DATE, DURATION_MINUTE) " +
+//                "VALUES (?,?,?,?,?);";
+        String sql = "INSERT INTO films (FILM_NAME,  DESCRIPTION, RELEASE_DATE, DURATION_MINUTE) " +
+                "VALUES (?,?,?,?);";
+    //    System.out.println(film.getMpa().getId());
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         PreparedStatementCreator preparedStatementCreator = con -> makeStatement(con, film, sql);
@@ -74,16 +80,15 @@ public class FilmDbStorage implements  FilmStorage{
         String sql = "SELECT * FROM films WHERE film_id = ?;";
         RowMapper<Film> rowMapper = (resultSet, rowNum) -> makeFilm(resultSet);
 
-        PreparedStatementCreator preparedStatementCreator = con -> {
-            PreparedStatement stmt = con.prepareStatement(sql, new String[]{"film_id"});
-            stmt.setString(1, String.valueOf(id));
-            return stmt;
-        };
+//        PreparedStatementCreator preparedStatementCreator = con -> {
+//            PreparedStatement stmt = con.prepareStatement(sql, new String[]{"film_id"});
+//            stmt.setString(1, String.valueOf(id));
+//            return stmt;
+//        };
 
         try {
-            return jdbcTemplate.query(
-                    preparedStatementCreator,
-                    rowMapper).get(0);
+            return jdbcTemplate.queryForObject(
+                    sql,rowMapper, id);
         } catch (Exception e) {
             throw new ValidationException("Фильма не существует");
         }
@@ -138,10 +143,12 @@ public class FilmDbStorage implements  FilmStorage{
         PreparedStatement stmt = con.prepareStatement(sql, new String[]{"film_id"});
         stmt.setString(1, film.getName());
         stmt.setString(2, film.getDescription());
-        stmt.setString(3, String.valueOf(film.getMpaId()));
-        stmt.setString(4, findIdGenre(film.getGenre()));
-        stmt.setString(5, film.getReleaseDate().toString());
-        stmt.setString(6, String.valueOf(film.getDuration().toMinutes()));
+//        if (film.getMpaId() != null)
+//             stmt.setString(4, String.valueOf(film.getMpaId()));
+//        else stmt.setString(4, null);
+//        stmt.setString(4, findIdGenre(film.getGenre()));
+        stmt.setString(3, film.getReleaseDate().toString());
+        stmt.setString(4, String.valueOf(film.getDuration().toMinutes()));
         return stmt;
     }
 
