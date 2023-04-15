@@ -57,20 +57,36 @@ public class FilmDbStorage implements  FilmStorage{
 
     @Override
     public Film update(Film film) {
-        String sql = "UPDATE films SET FILM_NAME=?, DESCRIPTION=?, MPA_ID=?, GENRE_ID=? , RELEASE_DATE=?, DURATION_MINUTE=?" +
+//        String sql = "UPDATE films SET FILM_NAME=?, DESCRIPTION=?, MPA_ID=?, GENRE_ID=? , RELEASE_DATE=?, DURATION_MINUTE=?" +
+//                "WHERE film_id =?;";
+
+        var genreId = 1;// Нужно сходить в таблицу жанров и записать что такой фильв в такой таблице
+
+        String sql = "UPDATE films SET FILM_NAME=?, DESCRIPTION=?, MPA_ID=?, RELEASE_DATE=?, DURATION_MINUTE=?" +
+                "WHERE film_id =?;";
+
+        String sqlToGenreFilms = "MERGE genre_films SET FILM_NAME=?, FILM_NAME=?" +
                 "WHERE film_id =?;";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         PreparedStatementCreator preparedStatementCreator = con -> {
             var stmt = makeStatement(con, film, sql);
-            stmt.setString(7, String.valueOf(film.getId()));
+            stmt.setString(6, String.valueOf(film.getId()));
+            stmt.setString(1, String.valueOf(film.getName()));
+            stmt.setString(2, String.valueOf(film.getDescription()));
+            stmt.setString(3, String.valueOf(film.getMpa().getId()));
+//            stmt.setString(7, String.valueOf(film.getGenres()));
+            stmt.setString(4, Date.valueOf(film.getReleaseDate()).toString());
+            stmt.setString(5, String.valueOf(film.getDuration().toMinutes()));
+            System.out.println(stmt);
             return stmt;
         };
+
         try {
             jdbcTemplate.update(preparedStatementCreator, keyHolder);
         } catch (Exception e) {
-            throw new ValidationException("Пользователя не существует");
+            throw new ValidationException("Фильма не существует");
         }
         return film;
     }

@@ -22,10 +22,10 @@ public class FriendshipDb implements FriendsStorage {
 
     @Override
     public void friend(long id1, long id2) {
-        String sql = "INSERT INTO friendship (USER_ID,  FRIEND_ID) VALUES (?,?);";
         Integer[] friendshipStatus = getFriendshipStatus(id1, id2);
         if (friendshipStatus[0] == 1)
             throw new RuntimeException("Пользователь уже добавлен в друзья");
+        String sql = "INSERT INTO friendship (USER_ID,  FRIEND_ID) VALUES (?,?);";
         PreparedStatementCreator preparedStatementCreator = con -> {
             PreparedStatement stmt = con.prepareStatement(sql, new String[]{"user_id"});
             stmt.setString(1, String.valueOf(id1));
@@ -38,17 +38,14 @@ public class FriendshipDb implements FriendsStorage {
     @Override
     public List<User> getFriends(long id) {
         String sql = String.format(
-                "SELECT u.user_id, u.email, u.login, u.user_name, u.birthday " +
-                "FROM (SELECT e.friend_id "  +
-                    "FROM   (select  * from friendship " +
-                    "where USER_ID = ?) e " +
-                "left join friendship f on e.FRIEND_ID = f.USER_ID " +
-                "where f.FRIEND_ID = ?) p " +
-                "left join users u on p.FRIEND_ID = u.USER_ID;");
+                "\n SELECT U.USER_ID, U.EMAIL, U.LOGIN, U.USER_NAME, U.BIRTHDAY \n" +
+                        "FROM FRIENDSHIP F \n" +
+                        "LEFT JOIN USERS U ON F.FRIEND_ID = U.USER_ID \n" +
+                        "WHERE f.USER_ID = ?; \n");
         PreparedStatementCreator preparedStatementCreator = con -> {
             PreparedStatement stmt = con.prepareStatement(sql, new String[]{"user_id"});
             stmt.setString(1, String.valueOf(id));
-            stmt.setString(2, String.valueOf(id));
+            System.out.println(stmt);
             return stmt;
         };
         RowMapper<User> rowMapper = (resultSet, rowNum) -> makeUser(resultSet);

@@ -15,7 +15,7 @@ public enum MPA {
     PG(2, "PG"),
     PG13(3, "PG-13"),
     R(4, "R"),
-    NC17(5, "PG-17");
+    NC17(5, "NC-17");
 
     @Getter
     final int id;
