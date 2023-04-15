@@ -11,7 +11,7 @@ LEFT JOIN genre g on g.genre_id = gf.genre_id
 WHERE genre_name = "Комедия";  
   
 ### Запрос списка друзей пользователя 
-SELECT U.USER_ID, U.EMAIL, U.LOGIN, U.USER_NAME, U.BIRTHDAY 
+SELECT U.USER_ID, U.EMAIL, U.LOGIN, U.USER_NAME, U.BIRTHDAY  
 FROM FRIENDSHIP F  
 LEFT JOIN USERS U ON U.USER_ID = F.Friend_ID  
 WHERE f.USER_ID = 1;  
