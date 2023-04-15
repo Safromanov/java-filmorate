@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Builder;
 import lombok.Data;
 
@@ -29,7 +30,7 @@ public class User {
     @PastOrPresent
     @NotNull
     private LocalDate birthday;
-
+    @JsonSerialize
     private Map<Long, Boolean> friends;
     private Set<Long> likedFilms;
 //    public User(String email, String login, String name, LocalDate birthday) {
@@ -47,6 +48,7 @@ public class User {
         var email = resultSet.getString("email");
         var login = resultSet.getString("login");
         var name = resultSet.getString("user_name");
+        if (name.isBlank()) name = login;
         var birthday = resultSet.getDate("birthday").toLocalDate();
         return builder()
                 .id(id)

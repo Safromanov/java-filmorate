@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.cfg.NotYetImplementedException;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -49,9 +50,20 @@ public class InMemoryFilmStorage implements FilmStorage{
 
     @Override
     public List<Film> getPopularFilm(int size) {
-        return  films.values().stream()
-                .sorted((x, y) -> x.getIdUsersWhoLike().size() <= y.getIdUsersWhoLike().size()? 1: -1)
-                .limit(size).collect(Collectors.toList());
+        throw new NotYetImplementedException();
+//        return  films.values().stream()
+//                .sorted((x, y) -> x.getIdUsersWhoLike().size() <= y.getIdUsersWhoLike().size()? 1: -1)
+//                .limit(size).collect(Collectors.toList();
+    }
+
+    @Override
+    public void addLike(long userId, long filmId) {
+        throw new NotYetImplementedException();
+    }
+
+    @Override
+    public void removeLike(long userId, long filmId) {
+        throw new NotYetImplementedException();
     }
 
 }

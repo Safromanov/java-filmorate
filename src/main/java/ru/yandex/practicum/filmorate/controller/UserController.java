@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.user.UserServiceImpl;
+import ru.yandex.practicum.filmorate.storage.user.FriendsStorage;
 
 
 import javax.validation.Valid;
@@ -18,6 +19,8 @@ import java.util.*;
 @RequiredArgsConstructor
 public class UserController {
     private final UserServiceImpl userService;
+    private final FriendsStorage friendsStorage;
+
 
     @GetMapping
     public Collection<User> findAll() {
@@ -41,22 +44,22 @@ public class UserController {
 
     @GetMapping("{id}/friends")
     public List<User> getFriends(@PathVariable long id) {
-        return userService.getFriends(id);
+        return friendsStorage.getFriends(id);
     }
 
     @GetMapping("{id}/friends/common/{otherId}")
     public List<User> getCommonFriends(@PathVariable long id, @PathVariable long otherId) {
-        return userService.getCommonFriends(id, otherId);
+        return friendsStorage.getCommonFriends(id, otherId);
     }
 
     @PutMapping("{id}/friends/{friendId}")
     public void friend(@PathVariable long id, @PathVariable long friendId){
-        userService.friend(userService.getUser(id), userService.getUser(friendId));
+        friendsStorage.friend(id, friendId);
     }
 
     @DeleteMapping ("{id}/friends/{friendId}")
     public void unfriend(@PathVariable long id, @PathVariable long friendId){
-        userService.unfriend(userService.getUser(id), userService.getUser(friendId));
+        friendsStorage.unfriend(id, friendId);
     }
 
 }

@@ -6,8 +6,8 @@ import java.util.List;
 
 public interface FriendsStorage {
     void friend(long id1, long id2);
+    void unfriend(long id1, long id2);
     List<User> getFriends(long id);
     List<User> getCommonFriends(long userId, long friendId);
-    void friend(User user, User anotherUser);
-    void unfriend(User user, User anotherUser);
+
 }

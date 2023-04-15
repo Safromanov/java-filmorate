@@ -5,7 +5,7 @@ CREATE TABLE  IF NOT EXISTS PUBLIC.GENRE
 );
 
 MERGE INTO GENRE (GENRE_ID, GENRE_NAME)
-VALUES (1, 'Комедия'), (2, 'Драма');
+VALUES (1, 'Комедия'), (2, 'Драма'), (3, 'Мультфильм'), (4, 'Триллер'), (5, 'Документальный'), (6, 'Боевик');
 
 CREATE TABLE IF NOT EXISTS PUBLIC.MPA
 (

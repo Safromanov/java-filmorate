@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
+import java.util.NoSuchElementException;
 
 @RequiredArgsConstructor
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
@@ -24,7 +25,11 @@ public enum MPA {
 
     @JsonCreator
     public static MPA findValue(@JsonProperty("id") int id){
-        return Arrays.stream(MPA.values()).filter(pt -> pt.id == id).findFirst().get();
+        try {
+            return Arrays.stream(MPA.values()).filter(pt -> pt.id == id).findFirst().get();
+        } catch (RuntimeException e){
+            throw new NoSuchElementException("Неверный возрастной рейтинг");
+        }
     }
 
 }

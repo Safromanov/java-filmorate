@@ -14,14 +14,13 @@ import java.util.List;
 public class FilmServiceImpl implements FilmService {
 
     private FilmStorage filmStorage;
-    public void likeFilm(Film film, User user){
-        user.getLikedFilms().add(film.getId());
-        film.getIdUsersWhoLike().add(user.getId());
+
+    public void likeFilm(long filmId, long userId){
+        filmStorage.addLike(filmId, userId);
     }
 
-    public void dislikeFilm(Film film, User user){
-        user.getLikedFilms().remove(film.getId());
-        film.getIdUsersWhoLike().remove(user.getId());
+    public void removeLike(long filmId, long userId){
+        filmStorage.removeLike(userId, filmId);
     }
 
     @Override

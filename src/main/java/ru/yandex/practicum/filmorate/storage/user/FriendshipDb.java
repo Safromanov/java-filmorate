@@ -36,6 +36,19 @@ public class FriendshipDb implements FriendsStorage {
     }
 
     @Override
+    public void unfriend(long id1, long id2) {
+        Integer[] friendshipStatus = getFriendshipStatus(id1, id2);
+        String sql = "DELETE FROM friendship WHERE user_id = ? and friend_id = ?;";
+        PreparedStatementCreator preparedStatementCreator = con -> {
+            PreparedStatement stmt = con.prepareStatement(sql, new String[]{"user_id"});
+            stmt.setString(1, String.valueOf(id1));
+            stmt.setString(2, String.valueOf(id2));
+            return stmt;
+        };
+        jdbcTemplate.update(preparedStatementCreator);
+    }
+
+    @Override
     public List<User> getFriends(long id) {
         String sql = String.format(
                 "\n SELECT U.USER_ID, U.EMAIL, U.LOGIN, U.USER_NAME, U.BIRTHDAY \n" +
@@ -54,16 +67,28 @@ public class FriendshipDb implements FriendsStorage {
 
     @Override
     public List<User> getCommonFriends(long userId, long friendId) {
-        return null;
-    }
-
-    @Override
-    public void friend(User user, User anotherUser) {
-
-    }
-
-    @Override
-    public void unfriend(User user, User anotherUser) {
+        String sql = String.format(" \n" +
+                "SELECT U.USER_ID, U.EMAIL, U.LOGIN, U.USER_NAME, U.BIRTHDAY \n" +
+                "FROM (\n" +
+                "SELECT b.friend_id  FROM ( \n" +
+                "\tSELECT f.FRIEND_ID\n" +
+                "\tFROM FRIENDSHIP F\n" +
+                "\tWHERE f.USER_ID = ?) a\n" +
+                "\tINNER JOIN ( \n" +
+                "\tSELECT f.FRIEND_ID\n" +
+                "\tFROM FRIENDSHIP F\n" +
+                "\tWHERE f.USER_ID = ? ) b ON a.friend_id = b.friend_id\t\n" +
+                ")  common \n" +
+                "LEFT JOIN USERS U ON common.FRIEND_ID = U.USER_ID;");
+        PreparedStatementCreator preparedStatementCreator = con -> {
+            PreparedStatement stmt = con.prepareStatement(sql, new String[]{"user_id"});
+            stmt.setString(1, String.valueOf(userId));
+            stmt.setString(2, String.valueOf(friendId));
+            System.out.println(stmt);
+            return stmt;
+        };
+        RowMapper<User> rowMapper = (resultSet, rowNum) -> makeUser(resultSet);
+        return jdbcTemplate.query(preparedStatementCreator, rowMapper);
 
     }
 
@@ -81,9 +106,7 @@ public class FriendshipDb implements FriendsStorage {
             stmt.setString(4, String.valueOf(id1));
             return stmt;
         };
-
         RowMapper<Integer[]> rowMapper = (rs, rowNum) -> new Integer[]{ rs.getInt(1),  rs.getInt(2)};
-
 
         // Map.Entry<Boolean, Boolean> ;
         return jdbcTemplate.query(preparedStatementCreator, rowMapper).get(0);

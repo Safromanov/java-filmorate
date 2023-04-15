@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.AllArgsConstructor;
+import org.hibernate.ObjectNotFoundException;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
@@ -18,6 +19,7 @@ import java.sql.*;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import static ru.yandex.practicum.filmorate.model.Film.makeFilm;
 
@@ -25,9 +27,10 @@ import static ru.yandex.practicum.filmorate.model.Film.makeFilm;
 @Primary
 @Component
 @AllArgsConstructor
-public class FilmDbStorage implements  FilmStorage{
+public class FilmDbStorage implements FilmStorage {
     JdbcTemplate jdbcTemplate;
-   // SimpleJdbcInsert simpleJdbcInsert;
+
+    // SimpleJdbcInsert simpleJdbcInsert;
     @Override
     public Collection<Film> findAll() {
         String sql = "SELECT * FROM films";
@@ -40,12 +43,11 @@ public class FilmDbStorage implements  FilmStorage{
 
     @Override
     public Film create(Film film) {
-        System.out.println(film.getMpa());
 //        String sql = "INSERT INTO films (FILM_NAME,  DESCRIPTION, MPA_ID, RELEASE_DATE, DURATION_MINUTE) " +
 //                "VALUES (?,?,?,?,?);";
-        String sql = "INSERT INTO films (FILM_NAME,  DESCRIPTION, RELEASE_DATE, DURATION_MINUTE) " +
-                "VALUES (?,?,?,?);";
-    //    System.out.println(film.getMpa().getId());
+        String sql = "INSERT INTO films (FILM_NAME,  DESCRIPTION, RELEASE_DATE, DURATION_MINUTE, MPA_id) " +
+                "VALUES (?,?,?,?,?);";
+        //    System.out.println(film.getMpa().getId());
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         PreparedStatementCreator preparedStatementCreator = con -> makeStatement(con, film, sql);
@@ -79,49 +81,67 @@ public class FilmDbStorage implements  FilmStorage{
 //            stmt.setString(7, String.valueOf(film.getGenres()));
             stmt.setString(4, Date.valueOf(film.getReleaseDate()).toString());
             stmt.setString(5, String.valueOf(film.getDuration().toMinutes()));
-            System.out.println(stmt);
             return stmt;
         };
-
-        try {
-            jdbcTemplate.update(preparedStatementCreator, keyHolder);
-        } catch (Exception e) {
+        if (jdbcTemplate.update(preparedStatementCreator, keyHolder) == 0)
             throw new ValidationException("Фильма не существует");
-        }
         return film;
+
+
     }
 
     @Override
     public Film getFilm(long id) {
         String sql = "SELECT * FROM films WHERE film_id = ?;";
         RowMapper<Film> rowMapper = (resultSet, rowNum) -> makeFilm(resultSet);
-
-//        PreparedStatementCreator preparedStatementCreator = con -> {
-//            PreparedStatement stmt = con.prepareStatement(sql, new String[]{"film_id"});
-//            stmt.setString(1, String.valueOf(id));
-//            return stmt;
-//        };
-
         try {
             return jdbcTemplate.queryForObject(
-                    sql,rowMapper, id);
+                    sql, rowMapper, id);
         } catch (Exception e) {
             throw new ValidationException("Фильма не существует");
         }
     }
 
     @Override
-    public List<Film> getPopularFilm(int size) {
-        return null;
+    public void addLike(long filmId, long userId) {
+        String sql = "MERGE INTO likes_film VALUES (?, ?)";
+        jdbcTemplate.update(sql, filmId, userId);
     }
 
-    private String findIdGenre(String genre){
+    @Override
+    public void removeLike(long userId, long filmId) {
+        String sql = "DELETE FROM likes_film WHERE user_id = ? AND film_id = ?";
+        jdbcTemplate.update(sql, userId, filmId);
+    }
+
+    @Override
+    public List<Film> getPopularFilm(int size) {
+        String sql = "\nSELECT f.film_id, f.FILM_NAME, f.DESCRIPTION, f.MPA_ID, f.RELEASE_DATE, f.DURATION_MINUTE\n" +
+                "from\n" +
+                "(SELECT film_id FROM likes_film\n" +
+                "GROUP BY film_id\n" +
+                "ORDER by COUNT(user_id) DESC\n" +
+                "LIMIT ?) popular_film\n" +
+                "LEFT JOIN films f ON f.film_id = popular_film.film_id\n";
+        RowMapper<Film> rowMapper = (resultSet, rowNum) -> makeFilm(resultSet);
+
+        PreparedStatementCreator preparedStatementCreator = con -> {
+            PreparedStatement stmt = con.prepareStatement(sql, new String[]{"film_id"});
+            stmt.setString(1, String.valueOf(size));
+            return stmt;
+        };
+        return jdbcTemplate.query(
+                preparedStatementCreator,
+                rowMapper);
+    }
+
+    private String findIdGenre(String genre) {
         String sql = "SELECT genre_id FROM films WHERE genre_name = ?";
         RowMapper<Integer> rowMapper = (resultSet, rowNum) -> resultSet.findColumn("genre_id");
 
         PreparedStatementCreator preparedStatementCreator = con -> {
             PreparedStatement stmt = con.prepareStatement(sql, new String[]{"genre_id"});
-            stmt.setString(1,genre);
+            stmt.setString(1, genre);
             return stmt;
         };
 
@@ -159,12 +179,14 @@ public class FilmDbStorage implements  FilmStorage{
         PreparedStatement stmt = con.prepareStatement(sql, new String[]{"film_id"});
         stmt.setString(1, film.getName());
         stmt.setString(2, film.getDescription());
-//        if (film.getMpaId() != null)
+        if (film.getMpa() != null)
+            stmt.setString(5, String.valueOf(film.getMpa().getId()));
 //             stmt.setString(4, String.valueOf(film.getMpaId()));
 //        else stmt.setString(4, null);
 //        stmt.setString(4, findIdGenre(film.getGenre()));
         stmt.setString(3, film.getReleaseDate().toString());
         stmt.setString(4, String.valueOf(film.getDuration().toMinutes()));
+      //  System.out.println(film.getDuration().getSeconds());
         return stmt;
     }
 

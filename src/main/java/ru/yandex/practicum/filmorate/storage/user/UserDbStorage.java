@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.AllArgsConstructor;
+import org.hibernate.ObjectNotFoundException;
 import org.springframework.context.annotation.Primary;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -64,11 +65,8 @@ public class UserDbStorage implements UserStorage {
             stmt.setString(5, String.valueOf(user.getId()));
             return stmt;
         };
-        try {
-            jdbcTemplate.update(preparedStatementCreator, keyHolder);
-        } catch (Exception e) {
+        if (jdbcTemplate.update(preparedStatementCreator, keyHolder) == 0)
             throw new ValidationException("Пользователя не существует");
-        }
         return user;
     }
 

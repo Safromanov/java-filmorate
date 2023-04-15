@@ -54,16 +54,16 @@ public class Film {
         var film_name = resultSet.getString("film_name");
         var description = resultSet.getString("description");
      //   var genre = resultSet.getString("genre");
-
-      //  var mpaId = (int[])resultSet.getArray("genre").getArray();
-     //   System.out.println(mpaId.length);
+        var duration = Long.parseLong(resultSet.getString("DURATION_MINUTE"));
+        var mpaId = Integer.parseInt(resultSet.getString("mpa_id"));
         var releaseDate = resultSet.getDate("release_date").toLocalDate();
         return builder()
                 .id(id)
                 .name(film_name)
                 .description(description)
             //    .genre(genre)
-                //.mpaId(mpaId)
+                .duration(Duration.ofMinutes(duration))
+                .mpa(MPA.findValue(mpaId))
                 .releaseDate(releaseDate)
                 .build();
     }

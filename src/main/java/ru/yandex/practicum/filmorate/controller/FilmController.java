@@ -18,7 +18,6 @@ import java.util.List;
 public class FilmController {
 
     private final FilmServiceImpl filmService;
-    private final UserService userService;
 
     @GetMapping
     public Collection<Film> findAll() {
@@ -43,12 +42,12 @@ public class FilmController {
 
     @PutMapping("{id}/like/{userId}")
     public void likeFilm(@PathVariable long id, @PathVariable long userId) {
-        filmService.likeFilm(filmService.getFilm(id), userService.getUser(userId));
+        filmService.likeFilm(id, userId);
     }
 
     @DeleteMapping("{id}/like/{userId}")
     public void dislikeFilm(@PathVariable long id, @PathVariable long userId) {
-        filmService.dislikeFilm(filmService.getFilm(id), userService.getUser(userId));
+        filmService.removeLike(id, userId);
     }
 
     @GetMapping("popular")

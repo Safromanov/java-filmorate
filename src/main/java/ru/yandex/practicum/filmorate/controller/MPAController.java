@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.MPA;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 
@@ -21,7 +22,11 @@ import java.util.stream.Collectors;
 public class MPAController {
     @GetMapping("{id}")
     public MPA getMPA(@PathVariable int id) {
-        return MPA.findValue(id);
+        try {
+            return MPA.findValue(id);
+        } catch (RuntimeException e){
+            throw new NoSuchElementException("Неверный возрастной рейтинг");
+        }
     }
 
     @GetMapping
