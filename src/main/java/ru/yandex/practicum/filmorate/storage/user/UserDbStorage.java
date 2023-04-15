@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import static ru.yandex.practicum.filmorate.model.User.makeUser;
 
@@ -40,7 +41,6 @@ public class UserDbStorage implements UserStorage {
         return jdbcTemplate.query(
                 preparedStatementCreator,
                 rowMapper);
-
     }
 
     @Override
@@ -53,6 +53,8 @@ public class UserDbStorage implements UserStorage {
 
         jdbcTemplate.update(preparedStatementCreator, keyHolder);
         user.setId(keyHolder.getKey().longValue());
+        if (user.getName().isBlank())
+            user.setName(user.getLogin());
         return user;
     }
 
@@ -71,7 +73,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public User getUser(long id) {
+    public Optional<User> getUser(long id) {
         String sql = "select * from Users where user_id = ?;";
         RowMapper<User> rowMapper = (resultSet, rowNum) -> makeUser(resultSet);
 
@@ -82,9 +84,9 @@ public class UserDbStorage implements UserStorage {
         };
 
         try {
-            return jdbcTemplate.query(
+            return Optional.of(jdbcTemplate.query(
                     preparedStatementCreator,
-                    rowMapper).get(0);
+                    rowMapper).get(0));
         } catch (Exception e) {
             throw new ValidationException(e.getLocalizedMessage());
         }
@@ -110,13 +112,4 @@ public class UserDbStorage implements UserStorage {
         return stmt;
     }
 
-//    private User makeUser(ResultSet resultSet) throws SQLException {
-//        User user = new User(
-//                resultSet.getString("email"),
-//                resultSet.getString("login"),
-//                resultSet.getString("user_name"),
-//                LocalDate.parse(resultSet.getString("birthday"), DateTimeFormatter.ISO_DATE));
-//        user.setId(Long.parseLong(resultSet.getString("user_id")));
-//        return user;
-//    }
 }

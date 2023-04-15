@@ -1,17 +1,17 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.*;
 import java.util.List;
-import java.util.Map;
+
 
 import static ru.yandex.practicum.filmorate.model.User.makeUser;
 @Primary
@@ -32,7 +32,12 @@ public class FriendshipDb implements FriendsStorage {
             stmt.setString(2, String.valueOf(id2));
             return stmt;
         };
-        jdbcTemplate.update(preparedStatementCreator);
+        try {
+            jdbcTemplate.update(preparedStatementCreator);
+        } catch (RuntimeException e){
+            throw new ValidationException("Неверный id");
+        }
+
     }
 
     @Override
@@ -58,7 +63,6 @@ public class FriendshipDb implements FriendsStorage {
         PreparedStatementCreator preparedStatementCreator = con -> {
             PreparedStatement stmt = con.prepareStatement(sql, new String[]{"user_id"});
             stmt.setString(1, String.valueOf(id));
-            System.out.println(stmt);
             return stmt;
         };
         RowMapper<User> rowMapper = (resultSet, rowNum) -> makeUser(resultSet);
@@ -84,7 +88,6 @@ public class FriendshipDb implements FriendsStorage {
             PreparedStatement stmt = con.prepareStatement(sql, new String[]{"user_id"});
             stmt.setString(1, String.valueOf(userId));
             stmt.setString(2, String.valueOf(friendId));
-            System.out.println(stmt);
             return stmt;
         };
         RowMapper<User> rowMapper = (resultSet, rowNum) -> makeUser(resultSet);
@@ -108,7 +111,6 @@ public class FriendshipDb implements FriendsStorage {
         };
         RowMapper<Integer[]> rowMapper = (rs, rowNum) -> new Integer[]{ rs.getInt(1),  rs.getInt(2)};
 
-        // Map.Entry<Boolean, Boolean> ;
         return jdbcTemplate.query(preparedStatementCreator, rowMapper).get(0);
     }
 }

@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Data;
 
@@ -15,7 +16,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+
 
 @Data
 @Builder
@@ -31,29 +35,19 @@ public class Film {
     private LocalDate releaseDate;
 
     private MPA mpa;
-   // private int mpaId;
+
     private List<Genre> genres;
     @NotNull
     @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT)
     @FilmDuration
     private Duration duration;
-
+    @JsonIgnore
     private List<Long> idUsersWhoLike;
 
-
-    //    public Film (String name, String description, LocalDate releaseDate, Duration duration) {
-//        this.id = -1;
-//        this.name = name;
-//        this.description = description;
-//        this.releaseDate = releaseDate;
-//        this.duration = duration;
-//        idUsersWhoLike = new ArrayList<>();
-//    }
     public static Film makeFilm(ResultSet resultSet) throws SQLException {
         var id = Long.parseLong(resultSet.getString("film_id"));
         var film_name = resultSet.getString("film_name");
         var description = resultSet.getString("description");
-     //   var genre = resultSet.getString("genre");
         var duration = Long.parseLong(resultSet.getString("DURATION_MINUTE"));
         var mpaId = Integer.parseInt(resultSet.getString("mpa_id"));
         var releaseDate = resultSet.getDate("release_date").toLocalDate();
@@ -61,8 +55,25 @@ public class Film {
                 .id(id)
                 .name(film_name)
                 .description(description)
-            //    .genre(genre)
-                .duration(Duration.ofMinutes(duration))
+                .duration(Duration.ofSeconds(duration))
+                .mpa(MPA.findValue(mpaId))
+                .releaseDate(releaseDate)
+                .build();
+    }
+
+    public static Film makeFilm(ResultSet resultSet, Collection<Genre> genres) throws SQLException {
+        var id = Long.parseLong(resultSet.getString("film_id"));
+        var film_name = resultSet.getString("film_name");
+        var description = resultSet.getString("description");
+        var duration = Long.parseLong(resultSet.getString("DURATION_MINUTE"));
+        var mpaId = Integer.parseInt(resultSet.getString("mpa_id"));
+        var releaseDate = resultSet.getDate("release_date").toLocalDate();
+        return builder()
+                .id(id)
+                .name(film_name)
+                .description(description)
+                .genres(new ArrayList<>(genres))
+                .duration(Duration.ofSeconds(duration))
                 .mpa(MPA.findValue(mpaId))
                 .releaseDate(releaseDate)
                 .build();

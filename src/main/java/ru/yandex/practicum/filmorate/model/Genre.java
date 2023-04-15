@@ -13,6 +13,7 @@ import java.sql.SQLException;
 public class Genre {
     private final int id;
     private String name;
+
     public static Genre makeGenre(ResultSet resultSet) throws SQLException {
         var id = Integer.parseInt(resultSet.getString("genre_id"));
         var name = resultSet.getString("genre_name");
@@ -20,5 +21,6 @@ public class Genre {
                 .id(id)
                 .name(name)
                 .build();
+
     }
 }

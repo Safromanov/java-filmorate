@@ -2,18 +2,17 @@ package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.GeneratorId;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
-//@Primary
+
 @Slf4j
 @Component
 @AllArgsConstructor
-public class InMemoryUserStorage implements UserStorage{
+public class InMemoryUserStorage implements UserStorage {
     private final Map<Long, User> users;
     private final GeneratorId generatorId;
 
@@ -24,24 +23,24 @@ public class InMemoryUserStorage implements UserStorage{
     }
 
     @Override
-    public User getUser(long id) {
-        User user = users.get(id);
-        if (user == null) throw new ValidationException("Введён не существующий id");
+    public  Optional<User> getUser(long id) {
+        var user = Optional.of(users.get(id));
+      //  if (user == null) throw new ValidationException("Введён не существующий id");
         return user;
     }
 
     @Override
-    public List<User> getFriends(long id){
+    public List<User> getFriends(long id) {
         List<User> friends = new ArrayList<>();
-        for (var friendId: users.get(id).getFriends().keySet())
+        for (var friendId : users.get(id).getFriends().keySet())
             friends.add(users.get(friendId));
         return friends;
     }
 
     @Override
     public List<User> getCommonFriends(long userId, long friendId) {
-        var friendsOfOne = getUser(userId).getFriends().keySet();
-        var friendsAnother = getUser(friendId).getFriends().keySet();
+        var friendsOfOne = getUser(userId).get().getFriends().keySet();
+        var friendsAnother = getUser(friendId).get().getFriends().keySet();
         var commonFriends = new ArrayList<User>();
         for (var idFriendOfOne : friendsOfOne)
             if (friendsAnother.contains(idFriendOfOne))

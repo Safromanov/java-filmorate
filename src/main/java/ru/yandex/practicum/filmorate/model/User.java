@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.Serializers;
 import lombok.Builder;
 import lombok.Data;
 
@@ -30,18 +32,10 @@ public class User {
     @PastOrPresent
     @NotNull
     private LocalDate birthday;
-    @JsonSerialize
+    @JsonIgnore
     private Map<Long, Boolean> friends;
+    @JsonIgnore
     private Set<Long> likedFilms;
-//    public User(String email, String login, String name, LocalDate birthday) {
-//        this.id =  -1;
-//        this.email = email;
-//        this.login = login;
-//        this.name = name;
-//        this.birthday = birthday;
-//        friends = new HashMap<>();
-//        likedFilms = new HashSet<>();
-//    }
 
     public static User makeUser(ResultSet resultSet) throws SQLException {
         var id = Long.parseLong(resultSet.getString("user_id"));

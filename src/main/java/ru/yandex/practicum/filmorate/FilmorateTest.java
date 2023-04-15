@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.MPA;
 
 import java.sql.PreparedStatement;
+import java.time.Duration;
 
 import static ru.yandex.practicum.filmorate.model.Film.makeFilm;
 
@@ -18,8 +19,10 @@ import static ru.yandex.practicum.filmorate.model.Film.makeFilm;
 public class FilmorateTest {
 
     public static void main(String[] args) {
-//        var a = MPA.fromId(3);
-//        System.out.println(a);
+        var a = Duration.ofMinutes(190);
+        System.out.println(a.toMinutes());
+        var b = Duration.ofMinutes(a.toMinutes());
+        System.out.println(b);
     }
 
 }

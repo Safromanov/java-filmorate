@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.model.GeneratorId;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
