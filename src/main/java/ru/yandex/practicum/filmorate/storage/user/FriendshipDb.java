@@ -35,7 +35,7 @@ public class FriendshipDb implements FriendsStorage {
         };
         try {
             jdbcTemplate.update(preparedStatementCreator);
-        } catch (RuntimeException e){
+        } catch (RuntimeException e) {
             throw new ValidationException("Неверный id");
         }
     }
@@ -108,7 +108,7 @@ public class FriendshipDb implements FriendsStorage {
             stmt.setString(4, String.valueOf(id1));
             return stmt;
         };
-        RowMapper<Integer[]> rowMapper = (rs, rowNum) -> new Integer[]{ rs.getInt(1),  rs.getInt(2)};
+        RowMapper<Integer[]> rowMapper = (rs, rowNum) -> new Integer[]{rs.getInt(1), rs.getInt(2)};
 
         return jdbcTemplate.query(preparedStatementCreator, rowMapper).get(0);
     }
