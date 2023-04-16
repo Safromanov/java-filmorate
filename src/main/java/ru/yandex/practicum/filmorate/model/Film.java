@@ -47,14 +47,14 @@ public class Film {
 
     public static Film makeFilm(ResultSet resultSet) throws SQLException {
         var id = Long.parseLong(resultSet.getString("film_id"));
-        var film_name = resultSet.getString("film_name");
+        var filmName = resultSet.getString("film_name");
         var description = resultSet.getString("description");
         var duration = Long.parseLong(resultSet.getString("DURATION_MINUTE"));
         var mpaId = Integer.parseInt(resultSet.getString("mpa_id"));
         var releaseDate = resultSet.getDate("release_date").toLocalDate();
         return builder()
                 .id(id)
-                .name(film_name)
+                .name(filmName)
                 .description(description)
                 .duration(Duration.ofSeconds(duration))
                 .mpa(MPA.findValue(mpaId))
