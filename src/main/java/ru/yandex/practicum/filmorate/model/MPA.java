@@ -22,7 +22,7 @@ public enum MPA {
     @Getter
     final private int id;
     @Getter
-    final private String name;
+    final String name;
 
     @JsonCreator
     public static MPA findValue(@JsonProperty("id") int id) {
