@@ -19,9 +19,9 @@ public enum MPA {
     R(4, "R"),
     NC17(5, "NC-17");
 
-    @Getter
-    final private int id;
-    @Getter
+
+    final int id;
+
     final String name;
 
     @JsonCreator
