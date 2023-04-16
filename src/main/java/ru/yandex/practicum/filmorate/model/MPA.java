@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
@@ -18,9 +19,10 @@ public enum MPA {
     R(4, "R"),
     NC17(5, "NC-17");
 
-
+    @Getter
     final int id;
 
+    @Getter
     final String name;
 
     @JsonCreator
