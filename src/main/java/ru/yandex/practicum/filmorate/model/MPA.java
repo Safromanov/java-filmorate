@@ -20,7 +20,7 @@ public enum MPA {
     NC17(5, "NC-17");
 
     @Getter
-    final int id;
+    final private int id;
     @Getter
     final private String name;
 
