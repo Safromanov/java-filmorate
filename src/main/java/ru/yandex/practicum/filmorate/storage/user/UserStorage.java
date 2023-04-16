@@ -9,7 +9,9 @@ import java.util.Optional;
 public interface UserStorage extends BaseStorage<User> {
 
     Optional<User> getUser(long id);
+
     List<User> getFriends(long id);
+
     List<User> getCommonFriends(long userId, long friendId);
 
 }
