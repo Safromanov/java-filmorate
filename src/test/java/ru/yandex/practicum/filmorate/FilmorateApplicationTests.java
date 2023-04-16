@@ -13,22 +13,23 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Optional;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-class FilmoRateApplicationTests {
+class FilmorateApplicationTests {
 
     private final UserDbStorage userDB;
 
     private final FilmDbStorage filmDb;
     User user1, user2;
-    Film Rambo, Nemo;
+    Film rambo, nemo;
     ArrayList<Genre> genresNemo;
     ArrayList<Genre> genresRambo;
 
@@ -53,21 +54,21 @@ class FilmoRateApplicationTests {
         genresNemo = new ArrayList<Genre>();
         genresNemo.add(Genre.builder().id(3).name("Мультфильм").build());
         genresNemo.add(Genre.builder().id(2).name("Драма").build());
-        Rambo = Film.builder().mpa(MPA.NC17).name("Rambo")
+        rambo = Film.builder().mpa(MPA.NC17).name("Rambo")
                 .description("Upon returning to the United States, Vietnam veteran John Rambo has difficulty"
                         + " adjusting to civilian life and wanders the country as a drifter for almost a decade.")
                 .duration(Duration.ofMinutes(93)).releaseDate(LocalDate.of(1982, 10, 22))
                 .genres(genresRambo)
                 .build();
-        Nemo = Film.builder().mpa(MPA.NC17).name("Finding Nemo")
+        nemo = Film.builder().mpa(MPA.NC17).name("Finding Nemo")
                 .description("Clownfish Marlin lives in an anemone in the Great Barrier Reef")
                 .duration(Duration.ofMinutes(100))
                 .releaseDate(LocalDate.of(2003, 5, 18))
                 .genres(genresNemo)
                 .mpa(MPA.G)
                 .build();
-        filmDb.create(Rambo);
-        filmDb.create(Nemo);
+        filmDb.create(rambo);
+        filmDb.create(nemo);
     }
 
     @Test
@@ -120,13 +121,13 @@ class FilmoRateApplicationTests {
 
     @Test
     public void updateFilm() {
-        Film Rambo2 = Film.builder().id(1).name("Rambo2").description("New blood")
+        Film rambo2 = Film.builder().id(1).name("Rambo2").description("New blood")
                 .releaseDate(LocalDate.of(2003, 5, 18))
                 .duration(Duration.ofMinutes(111))
                 .genres(genresNemo)
                 .mpa(MPA.G)
                 .build();
-        Optional<Film> filmUpdated = Optional.ofNullable(filmDb.update(Rambo2));
+        Optional<Film> filmUpdated = Optional.ofNullable(filmDb.update(rambo2));
         assertThat(filmUpdated).isPresent()
                 .hasValueSatisfying(film -> {
                     assertThat(film).hasFieldOrPropertyWithValue("name", "Rambo2");
