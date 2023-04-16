@@ -19,17 +19,18 @@ import java.util.stream.Collectors;
 @RequestMapping("/mpa")
 @RequiredArgsConstructor
 public class MPAController {
+
     @GetMapping("{id}")
     public MPA getMPA(@PathVariable int id) {
         try {
             return MPA.findValue(id);
-        } catch (RuntimeException e){
+        } catch (RuntimeException e) {
             throw new NoSuchElementException("Неверный возрастной рейтинг");
         }
     }
 
     @GetMapping
-    public Collection<MPA> getAllMPA(){
+    public Collection<MPA> getAllMPA() {
         return Arrays.stream(MPA.values()).collect(Collectors.toList());
     }
 }

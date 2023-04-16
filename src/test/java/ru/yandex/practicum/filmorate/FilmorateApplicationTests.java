@@ -23,26 +23,29 @@ import java.util.*;
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class FilmoRateApplicationTests {
+
     private final UserDbStorage userDB;
+
     private final FilmDbStorage filmDb;
-	User user1, user2;
-	Film Rambo, Nemo;
-	ArrayList<Genre> genresNemo;
-	ArrayList<Genre> genresRambo;
+    User user1, user2;
+    Film Rambo, Nemo;
+    ArrayList<Genre> genresNemo;
+    ArrayList<Genre> genresRambo;
+
     @BeforeEach
     public void beforeEach() {
         user1 = User.builder()
-				.email("hia99@ya.ru")
-				.login("hia99")
-				.name("hia99")
-				.birthday(LocalDate.of(1999, 9, 9))
-				.build();
+                .email("hia99@ya.ru")
+                .login("hia99")
+                .name("hia99")
+                .birthday(LocalDate.of(1999, 9, 9))
+                .build();
         user2 = User.builder()
-				.email("hope@ya.ru")
-				.login("hope")
-				.name("hope")
-				.birthday(LocalDate.of(1989, 9, 9))
-				.build();
+                .email("hope@ya.ru")
+                .login("hope")
+                .name("hope")
+                .birthday(LocalDate.of(1989, 9, 9))
+                .build();
         userDB.create(user1);
         userDB.create(user2);
         genresRambo = new ArrayList<Genre>();
@@ -51,18 +54,18 @@ class FilmoRateApplicationTests {
         genresNemo.add(Genre.builder().id(3).name("Мультфильм").build());
         genresNemo.add(Genre.builder().id(2).name("Драма").build());
         Rambo = Film.builder().mpa(MPA.NC17).name("Rambo")
-				.description("Upon returning to the United States, Vietnam veteran John Rambo has difficulty"
-						+ " adjusting to civilian life and wanders the country as a drifter for almost a decade.")
-				.duration(Duration.ofMinutes(93)).releaseDate(LocalDate.of(1982, 10, 22))
-				.genres(genresRambo)
-				.build();
+                .description("Upon returning to the United States, Vietnam veteran John Rambo has difficulty"
+                        + " adjusting to civilian life and wanders the country as a drifter for almost a decade.")
+                .duration(Duration.ofMinutes(93)).releaseDate(LocalDate.of(1982, 10, 22))
+                .genres(genresRambo)
+                .build();
         Nemo = Film.builder().mpa(MPA.NC17).name("Finding Nemo")
-				.description("Clownfish Marlin lives in an anemone in the Great Barrier Reef")
-				.duration(Duration.ofMinutes(100))
-				.releaseDate(LocalDate.of(2003, 5, 18))
-				.genres(genresNemo)
-				.mpa(MPA.G)
-				.build();
+                .description("Clownfish Marlin lives in an anemone in the Great Barrier Reef")
+                .duration(Duration.ofMinutes(100))
+                .releaseDate(LocalDate.of(2003, 5, 18))
+                .genres(genresNemo)
+                .mpa(MPA.G)
+                .build();
         filmDb.create(Rambo);
         filmDb.create(Nemo);
     }
@@ -78,61 +81,62 @@ class FilmoRateApplicationTests {
         });
     }
 
-	@Test
-	public void getFilmById() {
-		Optional<Film> filmOptional = Optional.ofNullable(filmDb.getFilm(2));
-		assertThat(filmOptional).isPresent()
-				.hasValueSatisfying(film -> {
-					assertThat(film).hasFieldOrPropertyWithValue("name", "Finding Nemo");
-					assertThat(film).hasFieldOrPropertyWithValue("description",
-							"Clownfish Marlin lives in an anemone in the Great Barrier Reef");
-					assertThat(film).hasFieldOrPropertyWithValue("duration", Duration.ofMinutes(100));
-					assertThat(film).hasFieldOrPropertyWithValue(
-							"releaseDate", LocalDate.of(2003, 5, 18));
-					assertThat(film).hasFieldOrPropertyWithValue("mpa", MPA.G);
-					assertThat(film).hasFieldOrPropertyWithValue("genres", genresNemo);
+    @Test
+    public void getFilmById() {
+        Optional<Film> filmOptional = Optional.ofNullable(filmDb.getFilm(2));
+        assertThat(filmOptional).isPresent()
+                .hasValueSatisfying(film -> {
+                    assertThat(film).hasFieldOrPropertyWithValue("name", "Finding Nemo");
+                    assertThat(film).hasFieldOrPropertyWithValue("description",
+                            "Clownfish Marlin lives in an anemone in the Great Barrier Reef");
+                    assertThat(film).hasFieldOrPropertyWithValue("duration", Duration.ofMinutes(100));
+                    assertThat(film).hasFieldOrPropertyWithValue(
+                            "releaseDate", LocalDate.of(2003, 5, 18));
+                    assertThat(film).hasFieldOrPropertyWithValue("mpa", MPA.G);
+                    assertThat(film).hasFieldOrPropertyWithValue("genres", genresNemo);
 
-				});
-	}
+                });
+    }
 
-	@Test
-	public void updateUser() {
-		user2.setId(2);
-		user2.setLogin("nohope");
-		user2.setEmail("nohope@gmail.net");
-		user2.setName("John");
-		user2.setBirthday(LocalDate.of(1996, 6, 6));
-		Optional<User> userUpdated = Optional.ofNullable(userDB.update(user2));
-		assertThat(userUpdated).isPresent()
-				.hasValueSatisfying(user -> {
-					assertThat(user).hasFieldOrPropertyWithValue("id", 2L);
-					assertThat(user).hasFieldOrPropertyWithValue("email", "nohope@gmail.net");
-					assertThat(user).hasFieldOrPropertyWithValue("login", "nohope");
-					assertThat(user).hasFieldOrPropertyWithValue("name", "John");
-					assertThat(user)
-							.hasFieldOrPropertyWithValue(
-									"birthday", LocalDate.of(1996, 6, 6));
-				});
-	}
-	@Test
-	public void updateFilm() {
-		Film Rambo2 = Film.builder().id(1).name("Rambo2").description("New blood")
-				.releaseDate(LocalDate.of(2003, 5, 18))
-				.duration(Duration.ofMinutes(111))
-				.genres(genresNemo)
-				.mpa(MPA.G)
-				.build();
-		Optional<Film> filmUpdated = Optional.ofNullable(filmDb.update(Rambo2));
-		assertThat(filmUpdated).isPresent()
-				.hasValueSatisfying(film -> {
-					assertThat(film).hasFieldOrPropertyWithValue("name", "Rambo2");
-					assertThat(film).hasFieldOrPropertyWithValue("description", "New blood");
-					assertThat(film).hasFieldOrPropertyWithValue("duration", Duration.ofMinutes(111));
-					assertThat(film).hasFieldOrPropertyWithValue(
-							"releaseDate", LocalDate.of(2003, 5, 18));
-					assertThat(film).hasFieldOrPropertyWithValue("mpa", MPA.G);
-					assertThat(film).hasFieldOrPropertyWithValue(
-							"genres", genresNemo);
-				});
-	}
+    @Test
+    public void updateUser() {
+        user2.setId(2);
+        user2.setLogin("nohope");
+        user2.setEmail("nohope@gmail.net");
+        user2.setName("John");
+        user2.setBirthday(LocalDate.of(1996, 6, 6));
+        Optional<User> userUpdated = Optional.ofNullable(userDB.update(user2));
+        assertThat(userUpdated).isPresent()
+                .hasValueSatisfying(user -> {
+                    assertThat(user).hasFieldOrPropertyWithValue("id", 2L);
+                    assertThat(user).hasFieldOrPropertyWithValue("email", "nohope@gmail.net");
+                    assertThat(user).hasFieldOrPropertyWithValue("login", "nohope");
+                    assertThat(user).hasFieldOrPropertyWithValue("name", "John");
+                    assertThat(user)
+                            .hasFieldOrPropertyWithValue(
+                                    "birthday", LocalDate.of(1996, 6, 6));
+                });
+    }
+
+    @Test
+    public void updateFilm() {
+        Film Rambo2 = Film.builder().id(1).name("Rambo2").description("New blood")
+                .releaseDate(LocalDate.of(2003, 5, 18))
+                .duration(Duration.ofMinutes(111))
+                .genres(genresNemo)
+                .mpa(MPA.G)
+                .build();
+        Optional<Film> filmUpdated = Optional.ofNullable(filmDb.update(Rambo2));
+        assertThat(filmUpdated).isPresent()
+                .hasValueSatisfying(film -> {
+                    assertThat(film).hasFieldOrPropertyWithValue("name", "Rambo2");
+                    assertThat(film).hasFieldOrPropertyWithValue("description", "New blood");
+                    assertThat(film).hasFieldOrPropertyWithValue("duration", Duration.ofMinutes(111));
+                    assertThat(film).hasFieldOrPropertyWithValue(
+                            "releaseDate", LocalDate.of(2003, 5, 18));
+                    assertThat(film).hasFieldOrPropertyWithValue("mpa", MPA.G);
+                    assertThat(film).hasFieldOrPropertyWithValue(
+                            "genres", genresNemo);
+                });
+    }
 }

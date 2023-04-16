@@ -11,7 +11,9 @@ import java.sql.SQLException;
 @AllArgsConstructor
 @Builder
 public class Genre {
+
     private final int id;
+
     private String name;
 
     public static Genre makeGenre(ResultSet resultSet) throws SQLException {

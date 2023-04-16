@@ -12,13 +12,14 @@ import java.util.List;
 @AllArgsConstructor
 public class FilmServiceImpl implements FilmService {
 
+
     private FilmStorage filmStorage;
 
-    public void likeFilm(long filmId, long userId){
+    public void likeFilm(long filmId, long userId) {
         filmStorage.addLike(filmId, userId);
     }
 
-    public void removeLike(long filmId, long userId){
+    public void removeLike(long filmId, long userId) {
         filmStorage.removeLike(userId, filmId);
     }
 

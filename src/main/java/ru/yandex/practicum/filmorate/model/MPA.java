@@ -12,6 +12,7 @@ import java.util.NoSuchElementException;
 @RequiredArgsConstructor
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum MPA {
+
     G(1, "G"),
     PG(2, "PG"),
     PG13(3, "PG-13"),
@@ -24,10 +25,10 @@ public enum MPA {
     final private String name;
 
     @JsonCreator
-    public static MPA findValue(@JsonProperty("id") int id){
+    public static MPA findValue(@JsonProperty("id") int id) {
         try {
             return Arrays.stream(MPA.values()).filter(pt -> pt.id == id).findFirst().get();
-        } catch (RuntimeException e){
+        } catch (RuntimeException e) {
             throw new NoSuchElementException("Неверный возрастной рейтинг");
         }
     }

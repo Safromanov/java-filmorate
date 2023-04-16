@@ -27,7 +27,9 @@ import static ru.yandex.practicum.filmorate.model.Film.makeFilm;
 @Component
 @AllArgsConstructor
 public class FilmDbStorage implements FilmStorage {
+
     private final JdbcTemplate jdbcTemplate;
+
     private final GenreDB genreDB;
 
     @Override
@@ -38,7 +40,7 @@ public class FilmDbStorage implements FilmStorage {
         var films = jdbcTemplate.query(
                 preparedStatementCreator,
                 rowMapper);
-        for (var film: films){
+        for (var film : films) {
             film.setGenres(genreDB.findGenresFilm(film.getId()));
         }
         return films;

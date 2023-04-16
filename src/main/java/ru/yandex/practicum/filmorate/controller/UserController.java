@@ -18,7 +18,9 @@ import java.util.*;
 @RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
+
     private final UserServiceImpl userService;
+
     private final FriendsStorage friendsStorage;
 
 
@@ -53,12 +55,12 @@ public class UserController {
     }
 
     @PutMapping("{id}/friends/{friendId}")
-    public void friend(@PathVariable long id, @PathVariable long friendId){
+    public void friend(@PathVariable long id, @PathVariable long friendId) {
         friendsStorage.friend(id, friendId);
     }
 
-    @DeleteMapping ("{id}/friends/{friendId}")
-    public void unfriend(@PathVariable long id, @PathVariable long friendId){
+    @DeleteMapping("{id}/friends/{friendId}")
+    public void unfriend(@PathVariable long id, @PathVariable long friendId) {
         friendsStorage.unfriend(id, friendId);
     }
 

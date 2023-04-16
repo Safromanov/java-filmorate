@@ -18,6 +18,7 @@ import static ru.yandex.practicum.filmorate.model.Genre.makeGenre;
 @Component
 @RequiredArgsConstructor
 public class GenreDB {
+
     private final JdbcTemplate jdbcTemplate;
 
     public Genre getGenre(int id) {
@@ -66,4 +67,6 @@ public class GenreDB {
         jdbcTemplate.update(sql, filmId);
         return create(filmId, genres);
     }
+
 }
+

@@ -14,10 +14,12 @@ import java.util.List;
 
 
 import static ru.yandex.practicum.filmorate.model.User.makeUser;
+
 @Primary
 @Component
 @RequiredArgsConstructor
 public class FriendshipDb implements FriendsStorage {
+
     private final JdbcTemplate jdbcTemplate;
 
     @Override
@@ -113,4 +115,5 @@ public class FriendshipDb implements FriendsStorage {
 
         return jdbcTemplate.query(preparedStatementCreator, rowMapper).get(0);
     }
+
 }

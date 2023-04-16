@@ -13,7 +13,9 @@ import java.util.*;
 @Component
 @AllArgsConstructor
 public class InMemoryUserStorage implements UserStorage {
+
     private final Map<Long, User> users;
+
     private final GeneratorId generatorId;
 
 
@@ -25,7 +27,6 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public  Optional<User> getUser(long id) {
         var user = Optional.of(users.get(id));
-      //  if (user == null) throw new ValidationException("Введён не существующий id");
         return user;
     }
 

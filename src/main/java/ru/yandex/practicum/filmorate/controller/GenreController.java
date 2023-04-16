@@ -18,14 +18,16 @@ import java.util.Collection;
 @RequestMapping("/genres")
 @AllArgsConstructor
 public class GenreController {
+
     GenreDB genreDB;
+
     @GetMapping("{id}")
     public Genre getGenre(@PathVariable int id) {
         return genreDB.getGenre(id);
     }
 
     @GetMapping
-    public Collection<Genre> getAllGenres(){
+    public Collection<Genre> getAllGenres() {
         return genreDB.findAll();
     }
 }

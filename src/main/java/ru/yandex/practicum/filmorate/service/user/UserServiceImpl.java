@@ -13,17 +13,17 @@ import java.util.Optional;
 @Service
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
+
     private UserStorage userStorage;
+
     private FriendsStorage friendsStorage;
 
     public void friend(User user, User anotherUser) {
         if (anotherUser.equals(user)) throw new RuntimeException("Себя не зафрендить");
-//        user.getFriends().put(anotherUser.getId(), true);
-//        anotherUser.getFriends().put(user.getId(), true);
         friendsStorage.friend(user.getId(), anotherUser.getId());
     }
 
-    public void unfriend(User user, User anotherUser){
+    public void unfriend(User user, User anotherUser) {
         if (!user.getFriends().containsKey(anotherUser.getId()))
             throw new RuntimeException("Пользователи не являются друзьями");
         user.getFriends().remove(anotherUser.getId());
@@ -59,4 +59,5 @@ public class UserServiceImpl implements UserService {
     public List<User> getCommonFriends(long userId, long friendId) {
         return userStorage.getCommonFriends(userId, friendId);
     }
+
 }

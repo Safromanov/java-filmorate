@@ -15,8 +15,10 @@ import java.util.Map;
 @Slf4j
 @Component
 @AllArgsConstructor
-public class InMemoryFilmStorage implements FilmStorage{
+public class InMemoryFilmStorage implements FilmStorage {
+
     private final Map<Long, Film> films;
+
     private final GeneratorId generatorId;
 
 

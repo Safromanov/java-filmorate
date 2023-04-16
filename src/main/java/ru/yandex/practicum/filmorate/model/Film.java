@@ -24,6 +24,7 @@ import java.util.List;
 @Data
 @Builder
 public class Film {
+
     private long id;
     @NotBlank
     private String name;

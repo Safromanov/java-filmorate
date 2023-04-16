@@ -1,24 +1,21 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.AllArgsConstructor;
-import org.hibernate.ObjectNotFoundException;
+
 import org.springframework.context.annotation.Primary;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
+
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import javax.sql.RowSet;
+
 import java.sql.*;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -29,8 +26,8 @@ import static ru.yandex.practicum.filmorate.model.User.makeUser;
 @Component
 @AllArgsConstructor
 public class UserDbStorage implements UserStorage {
+
     private final JdbcTemplate jdbcTemplate;
- //   private final FriendsStorage friendsDbStorage;
 
     @Override
     public Collection<User> findAll() {
@@ -38,9 +35,7 @@ public class UserDbStorage implements UserStorage {
         RowMapper<User> rowMapper = (resultSet, rowNum) -> makeUser(resultSet);
 
         PreparedStatementCreator preparedStatementCreator = con -> con.prepareStatement(sql, new String[]{"user_id"});
-        return jdbcTemplate.query(
-                preparedStatementCreator,
-                rowMapper);
+        return jdbcTemplate.query(preparedStatementCreator, rowMapper);
     }
 
     @Override
@@ -53,8 +48,7 @@ public class UserDbStorage implements UserStorage {
 
         jdbcTemplate.update(preparedStatementCreator, keyHolder);
         user.setId(keyHolder.getKey().longValue());
-        if (user.getName().isBlank())
-            user.setName(user.getLogin());
+        if (user.getName().isBlank()) user.setName(user.getLogin());
         return user;
     }
 
@@ -84,9 +78,7 @@ public class UserDbStorage implements UserStorage {
         };
 
         try {
-            return Optional.of(jdbcTemplate.query(
-                    preparedStatementCreator,
-                    rowMapper).get(0));
+            return Optional.of(jdbcTemplate.query(preparedStatementCreator, rowMapper).get(0));
         } catch (Exception e) {
             throw new ValidationException(e.getLocalizedMessage());
         }
