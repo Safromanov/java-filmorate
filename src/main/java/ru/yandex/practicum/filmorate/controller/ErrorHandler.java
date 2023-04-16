@@ -22,11 +22,13 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public List<String> handleValidationError(NoSuchElementException e) {
-        return List.of(e.getMessage());}
+        return List.of(e.getMessage());
+    }
 
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public List<String> handleValidationError(ObjectNotFoundException e) {
-        return List.of(e.getMessage());}
+        return List.of(e.getMessage());
+    }
 }
