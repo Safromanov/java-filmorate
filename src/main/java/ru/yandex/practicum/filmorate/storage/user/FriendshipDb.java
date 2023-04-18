@@ -21,20 +21,6 @@ public class FriendshipDb implements FriendsStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
-    private final String SQL_GET_COMMON_FRIENDS = " \n" +
-            "SELECT U.USER_ID, U.EMAIL, U.LOGIN, U.USER_NAME, U.BIRTHDAY \n" +
-            "FROM (\n" +
-            "SELECT b.friend_id  FROM ( \n" +
-            "\tSELECT f.FRIEND_ID\n" +
-            "\tFROM FRIENDSHIP F\n" +
-            "\tWHERE f.USER_ID = ?) a\n" +
-            "\tINNER JOIN ( \n" +
-            "\tSELECT f.FRIEND_ID\n" +
-            "\tFROM FRIENDSHIP F\n" +
-            "\tWHERE f.USER_ID = ? ) b ON a.friend_id = b.friend_id\t\n" +
-            ")  common \n" +
-            "LEFT JOIN USERS U ON common.FRIEND_ID = U.USER_ID;";
-
     @Override
     public void friend(long id1, long id2) {
         Integer[] friendshipStatus = getFriendshipStatus(id1, id2);
@@ -84,8 +70,21 @@ public class FriendshipDb implements FriendsStorage {
 
     @Override
     public List<User> getCommonFriends(long userId, long friendId) {
+        String sqlGetCommonFriends = " \n" +
+                "SELECT U.USER_ID, U.EMAIL, U.LOGIN, U.USER_NAME, U.BIRTHDAY \n" +
+                "FROM (\n" +
+                "SELECT b.friend_id  FROM ( \n" +
+                "\tSELECT f.FRIEND_ID\n" +
+                "\tFROM FRIENDSHIP F\n" +
+                "\tWHERE f.USER_ID = ?) a\n" +
+                "\tINNER JOIN ( \n" +
+                "\tSELECT f.FRIEND_ID\n" +
+                "\tFROM FRIENDSHIP F\n" +
+                "\tWHERE f.USER_ID = ? ) b ON a.friend_id = b.friend_id\t\n" +
+                ")  common \n" +
+                "LEFT JOIN USERS U ON common.FRIEND_ID = U.USER_ID;";
         PreparedStatementCreator preparedStatementCreator = con -> {
-            PreparedStatement stmt = con.prepareStatement(SQL_GET_COMMON_FRIENDS, new String[]{"user_id"});
+            PreparedStatement stmt = con.prepareStatement(sqlGetCommonFriends, new String[]{"user_id"});
             stmt.setString(1, String.valueOf(userId));
             stmt.setString(2, String.valueOf(friendId));
             return stmt;
