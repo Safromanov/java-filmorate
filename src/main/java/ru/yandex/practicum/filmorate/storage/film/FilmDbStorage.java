@@ -1,66 +1,86 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
-import lombok.AllArgsConstructor;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
-import org.springframework.jdbc.core.RowMapper;
-
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import static ru.yandex.practicum.filmorate.model.Film.makeFilm;
-
-
 @Primary
-@Component
-@AllArgsConstructor
+@Repository
+@RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
-    private final GenreDB genreDB;
+    private final ResultSetExtractor<Map<Film, List<Genre>>> filmExtractor;
+
+    private final String SQL_ADD_FILM =
+            "INSERT INTO films (FILM_NAME,  DESCRIPTION, RELEASE_DATE, DURATION_MINUTE, MPA_id) " +
+                    "VALUES (?,?,?,?,?);";
+
+    private final String SQL_GET_FILM =
+            "\nSELECT *\n" +
+                    "FROM films f\n" +
+                    "LEFT JOIN genre_films gf ON f.film_id = gf.film_id\n" +
+                    "LEFT JOIN genre g ON gf.genre_id = g.genre_id" +
+                    "WHERE f.film_id = ?";
+
+    private final String SQL_GET_ALL_FILMS =
+            "\nSELECT *\n" +
+                    "FROM films f \n" +
+                    "LEFT JOIN genre_films gf ON f.film_id = gf.film_id\n" +
+                    "LEFT JOIN genre g ON gf.genre_id = g.genre_id";
+
+    private final String SQL_GET_POPULAR_FILMS =
+            "\nSELECT *\n" +
+                    "FROM \n" +
+                    "(SELECT film_id FROM likes_film\n" +
+                    "GROUP BY film_id\n" +
+                    "ORDER by COUNT(user_id) DESC\n" +
+                    "LIMIT ?) popular_film\n" +
+                    "LEFT JOIN films f ON f.film_id = popular_film.film_id\n" +
+                    "LEFT JOIN genre_films gf ON f.film_id = gf.film_id\n" +
+                    "LEFT JOIN genre g ON gf.genre_id = g.genre_id";
 
     @Override
     public Collection<Film> findAll() {
-        String sql = "SELECT * FROM films";
-        RowMapper<Film> rowMapper = (resultSet, rowNum) -> makeFilm(resultSet);
-        PreparedStatementCreator preparedStatementCreator = con -> con.prepareStatement(sql, new String[]{"film_id"});
-        var films = jdbcTemplate.query(
-                preparedStatementCreator,
-                rowMapper);
-        for (var film : films) {
-            film.setGenres(genreDB.findGenresFilm(film.getId()));
+        var mapGenre = jdbcTemplate.query(SQL_GET_ALL_FILMS, filmExtractor);
+        for (var film : mapGenre.entrySet()) {
+            film.getKey().setGenres(film.getValue());
+
         }
-        return films;
+        return mapGenre.keySet();
     }
 
     @Override
-    public Film create(Film film) {
-        String sql = "INSERT INTO films (FILM_NAME,  DESCRIPTION, RELEASE_DATE, DURATION_MINUTE, MPA_id) " +
-                "VALUES (?,?,?,?,?);";
+    public Film addFilm(Film film) {
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        PreparedStatementCreator preparedStatementCreator = con -> makeStatement(con, film, sql);
+        PreparedStatementCreator preparedStatementCreator = con -> makeStatement(con, film, SQL_ADD_FILM);
 
         jdbcTemplate.update(preparedStatementCreator, keyHolder);
 
-        film.setGenres(genreDB.create(keyHolder.getKey().longValue(), film.getGenres()));
-
         film.setId(keyHolder.getKey().longValue());
+
         return film;
+
     }
 
     @Override
@@ -69,31 +89,26 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "UPDATE films SET FILM_NAME=?, DESCRIPTION=?, RELEASE_DATE=?, DURATION_MINUTE=?, MPA_id=?" +
                 "WHERE film_id =?;";
 
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-
         PreparedStatementCreator preparedStatementCreator = con -> {
             var stmt = makeStatement(con, film, sql);
             stmt.setString(6, String.valueOf(film.getId()));
             return stmt;
         };
-        if (jdbcTemplate.update(preparedStatementCreator, keyHolder) == 0)
-            throw new ValidationException("Фильма не существует");
-        film.setGenres(genreDB.update(film.getId(), film.getGenres()));
-        return film;
 
+        if (jdbcTemplate.update(preparedStatementCreator) == 0)
+            throw new ValidationException("Фильма не существует");
+
+        return film;
     }
 
     @Override
     public Film getFilm(long id) {
-        String sql = "SELECT * FROM films WHERE film_id = ?;";
-        Collection<Genre> genres = genreDB.findGenresFilm(id);
-        RowMapper<Film> rowMapper = (resultSet, rowNum) -> makeFilm(resultSet, genres);
-        try {
-            return jdbcTemplate.queryForObject(
-                    sql, rowMapper, id);
-        } catch (Exception e) {
-            throw new ValidationException("Фильма не существует");
+        var mapGenre = jdbcTemplate.query(SQL_GET_FILM, filmExtractor, id);
+        for (var film : mapGenre.entrySet()) {
+            film.getKey().setGenres(film.getValue());
+            return film.getKey();
         }
+        throw new ValidationException("Неверный id");
     }
 
     @Override
@@ -110,27 +125,14 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getPopularFilm(int size) {
-        String sql = "\nSELECT f.film_id, f.FILM_NAME, f.DESCRIPTION, f.MPA_ID, f.RELEASE_DATE, f.DURATION_MINUTE\n" +
-                "from\n" +
-                "(SELECT film_id FROM likes_film\n" +
-                "GROUP BY film_id\n" +
-                "ORDER by COUNT(user_id) DESC\n" +
-                "LIMIT ?) popular_film\n" +
-                "LEFT JOIN films f ON f.film_id = popular_film.film_id\n";
-        RowMapper<Film> rowMapper = (resultSet, rowNum) -> makeFilm(resultSet);
-
-        PreparedStatementCreator preparedStatementCreator = con -> {
-            PreparedStatement stmt = con.prepareStatement(sql, new String[]{"film_id"});
-            stmt.setString(1, String.valueOf(size));
-            return stmt;
-        };
-
-        var listPopular = jdbcTemplate.query(
-                preparedStatementCreator,
-                rowMapper);
+    public Set<Film> getPopularFilm(int size) {
+        var mapGenre = jdbcTemplate.query(SQL_GET_POPULAR_FILMS, filmExtractor, size);
+        for (var film : mapGenre.entrySet()) {
+            film.getKey().setGenres(film.getValue());
+        }
+        var listPopular = mapGenre.keySet();
         if (listPopular.isEmpty())
-            listPopular = findAll().stream().limit(size).collect(Collectors.toList());
+            listPopular = findAll().stream().limit(size).collect(Collectors.toSet());
         return listPopular;
     }
 

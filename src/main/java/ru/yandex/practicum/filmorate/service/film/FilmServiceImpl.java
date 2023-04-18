@@ -4,16 +4,20 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.film.GenreDB;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Set;
 
 @Service
 @AllArgsConstructor
 public class FilmServiceImpl implements FilmService {
 
 
-    private FilmStorage filmStorage;
+    private final FilmStorage filmStorage;
+
+    private final GenreDB genreDB;
+
 
     public void likeFilm(long filmId, long userId) {
         filmStorage.addLike(filmId, userId);
@@ -30,12 +34,20 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public Film create(Film film) {
-        return filmStorage.create(film);
+        filmStorage.addFilm(film);
+
+        film.setGenres(genreDB.addGenresToFilm(film.getId(), film.getGenres()));
+
+        return film;
     }
 
     @Override
     public Film update(Film film) {
-        return filmStorage.update(film);
+        filmStorage.update(film);
+
+        film.setGenres(genreDB.updateGenresFilm(film.getId(), film.getGenres()));
+
+        return film;
     }
 
     @Override
@@ -44,7 +56,8 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public List<Film> getPopularFilm(int size) {
+    public Set<Film> getPopularFilm(int size) {
         return filmStorage.getPopularFilm(size);
     }
+
 }

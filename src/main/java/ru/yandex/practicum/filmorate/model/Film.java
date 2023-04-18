@@ -1,11 +1,9 @@
 package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Data;
-
 import ru.yandex.practicum.filmorate.validator.FilmDuration;
 import ru.yandex.practicum.filmorate.validator.FilmReleaseDate;
 
@@ -16,8 +14,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 
@@ -56,24 +52,6 @@ public class Film {
                 .id(id)
                 .name(filmName)
                 .description(description)
-                .duration(Duration.ofSeconds(duration))
-                .mpa(MPA.findValue(mpaId))
-                .releaseDate(releaseDate)
-                .build();
-    }
-
-    public static Film makeFilm(ResultSet resultSet, Collection<Genre> genres) throws SQLException {
-        var id = Long.parseLong(resultSet.getString("film_id"));
-        var filmName = resultSet.getString("film_name");
-        var description = resultSet.getString("description");
-        var duration = Long.parseLong(resultSet.getString("DURATION_MINUTE"));
-        var mpaId = Integer.parseInt(resultSet.getString("mpa_id"));
-        var releaseDate = resultSet.getDate("release_date").toLocalDate();
-        return builder()
-                .id(id)
-                .name(filmName)
-                .description(description)
-                .genres(new ArrayList<>(genres))
                 .duration(Duration.ofSeconds(duration))
                 .mpa(MPA.findValue(mpaId))
                 .releaseDate(releaseDate)

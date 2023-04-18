@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -15,17 +15,31 @@ import java.util.List;
 import static ru.yandex.practicum.filmorate.model.User.makeUser;
 
 @Primary
-@Component
+@Repository
 @RequiredArgsConstructor
 public class FriendshipDb implements FriendsStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
+    private final String SQL_GET_COMMON_FRIENDS = " \n" +
+            "SELECT U.USER_ID, U.EMAIL, U.LOGIN, U.USER_NAME, U.BIRTHDAY \n" +
+            "FROM (\n" +
+            "SELECT b.friend_id  FROM ( \n" +
+            "\tSELECT f.FRIEND_ID\n" +
+            "\tFROM FRIENDSHIP F\n" +
+            "\tWHERE f.USER_ID = ?) a\n" +
+            "\tINNER JOIN ( \n" +
+            "\tSELECT f.FRIEND_ID\n" +
+            "\tFROM FRIENDSHIP F\n" +
+            "\tWHERE f.USER_ID = ? ) b ON a.friend_id = b.friend_id\t\n" +
+            ")  common \n" +
+            "LEFT JOIN USERS U ON common.FRIEND_ID = U.USER_ID;";
+
     @Override
     public void friend(long id1, long id2) {
         Integer[] friendshipStatus = getFriendshipStatus(id1, id2);
         if (friendshipStatus[0] == 1)
-            throw new RuntimeException("Пользователь уже добавлен в друзья");
+            throw new ValidationException("Пользователь уже добавлен в друзья");
         String sql = "INSERT INTO friendship (USER_ID,  FRIEND_ID) VALUES (?,?);";
         PreparedStatementCreator preparedStatementCreator = con -> {
             PreparedStatement stmt = con.prepareStatement(sql, new String[]{"user_id"});
@@ -70,21 +84,8 @@ public class FriendshipDb implements FriendsStorage {
 
     @Override
     public List<User> getCommonFriends(long userId, long friendId) {
-        String sql = " \n" +
-                "SELECT U.USER_ID, U.EMAIL, U.LOGIN, U.USER_NAME, U.BIRTHDAY \n" +
-                "FROM (\n" +
-                "SELECT b.friend_id  FROM ( \n" +
-                "\tSELECT f.FRIEND_ID\n" +
-                "\tFROM FRIENDSHIP F\n" +
-                "\tWHERE f.USER_ID = ?) a\n" +
-                "\tINNER JOIN ( \n" +
-                "\tSELECT f.FRIEND_ID\n" +
-                "\tFROM FRIENDSHIP F\n" +
-                "\tWHERE f.USER_ID = ? ) b ON a.friend_id = b.friend_id\t\n" +
-                ")  common \n" +
-                "LEFT JOIN USERS U ON common.FRIEND_ID = U.USER_ID;";
         PreparedStatementCreator preparedStatementCreator = con -> {
-            PreparedStatement stmt = con.prepareStatement(sql, new String[]{"user_id"});
+            PreparedStatement stmt = con.prepareStatement(SQL_GET_COMMON_FRIENDS, new String[]{"user_id"});
             stmt.setString(1, String.valueOf(userId));
             stmt.setString(2, String.valueOf(friendId));
             return stmt;

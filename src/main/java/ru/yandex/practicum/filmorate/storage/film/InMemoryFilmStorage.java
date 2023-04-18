@@ -3,17 +3,17 @@ package ru.yandex.practicum.filmorate.storage.film;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.cfg.NotYetImplementedException;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.GeneratorId;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
-@Component
+@Repository
 @AllArgsConstructor
 public class InMemoryFilmStorage implements FilmStorage {
 
@@ -33,7 +33,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         return film;
     }
 
-    public Film create(Film film) {
+    public Film addFilm(Film film) {
         film.setId(generatorId.getId());
         log.debug("Новый фильм: {}", film);
         films.put(film.getId(), film);
@@ -50,7 +50,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getPopularFilm(int size) {
+    public Set<Film> getPopularFilm(int size) {
         throw new NotYetImplementedException();
 //        return  films.values().stream()
 //                .sorted((x, y) -> x.getIdUsersWhoLike().size() <= y.getIdUsersWhoLike().size()? 1: -1)

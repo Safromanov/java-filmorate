@@ -17,6 +17,7 @@ public class Genre {
     private String name;
 
     public static Genre makeGenre(ResultSet resultSet) throws SQLException {
+        if (resultSet.getString("genre_id") == null) return null;
         var id = Integer.parseInt(resultSet.getString("genre_id"));
         var name = resultSet.getString("genre_name");
         return builder()

@@ -8,7 +8,7 @@ import ru.yandex.practicum.filmorate.service.film.FilmServiceImpl;
 
 import javax.validation.Valid;
 import java.util.Collection;
-import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @RestController
@@ -50,7 +50,7 @@ public class FilmController {
     }
 
     @GetMapping("popular")
-    public List<Film> getPopularFilms(@RequestParam(value = "count", defaultValue = "10", required = false) Integer count) {
+    public Set<Film> getPopularFilms(@RequestParam(value = "count", defaultValue = "10", required = false) Integer count) {
         return filmService.getPopularFilm(count);
     }
 

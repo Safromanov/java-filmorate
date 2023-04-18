@@ -1,21 +1,20 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.AllArgsConstructor;
-
 import org.springframework.context.annotation.Primary;
-
-
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -23,7 +22,7 @@ import java.util.Optional;
 import static ru.yandex.practicum.filmorate.model.User.makeUser;
 
 @Primary
-@Component
+@Repository
 @AllArgsConstructor
 public class UserDbStorage implements UserStorage {
 
@@ -39,7 +38,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public User create(User user) {
+    public User addFilm(User user) {
         String sql = "INSERT INTO USERS (LOGIN,  USER_NAME, EMAIL, BIRTHDAY) VALUES (?,?,?,?);";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
