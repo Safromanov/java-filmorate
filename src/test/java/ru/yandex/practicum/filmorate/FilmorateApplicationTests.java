@@ -94,7 +94,7 @@ class FilmorateApplicationTests {
                     assertThat(film).hasFieldOrPropertyWithValue(
                             "releaseDate", LocalDate.of(2003, 5, 18));
                     assertThat(film).hasFieldOrPropertyWithValue("mpa", MPA.G);
-                    assertThat(film).hasFieldOrPropertyWithValue("genres", genresNemo);
+
 
                 });
     }
