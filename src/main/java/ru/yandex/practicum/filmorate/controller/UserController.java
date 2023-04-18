@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.user.UserServiceImpl;
-import ru.yandex.practicum.filmorate.storage.user.FriendsStorage;
 
 import javax.validation.Valid;
 import java.util.Collection;
@@ -19,7 +18,7 @@ public class UserController {
 
     private final UserServiceImpl userService;
 
-    private final FriendsStorage friendsStorage;
+    //private final FriendsStorage friendsStorage;
 
 
     @GetMapping
@@ -44,22 +43,22 @@ public class UserController {
 
     @GetMapping("{id}/friends")
     public List<User> getFriends(@PathVariable long id) {
-        return friendsStorage.getFriends(id);
+        return userService.getFriends(id);
     }
 
     @GetMapping("{id}/friends/common/{otherId}")
     public List<User> getCommonFriends(@PathVariable long id, @PathVariable long otherId) {
-        return friendsStorage.getCommonFriends(id, otherId);
+        return userService.getCommonFriends(id, otherId);
     }
 
     @PutMapping("{id}/friends/{friendId}")
     public void friend(@PathVariable long id, @PathVariable long friendId) {
-        friendsStorage.friend(id, friendId);
+        userService.friend(id, friendId);
     }
 
     @DeleteMapping("{id}/friends/{friendId}")
     public void unfriend(@PathVariable long id, @PathVariable long friendId) {
-        friendsStorage.unfriend(id, friendId);
+        userService.unfriend(id, friendId);
     }
 
 }

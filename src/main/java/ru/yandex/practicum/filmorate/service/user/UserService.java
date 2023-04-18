@@ -14,8 +14,8 @@ public interface UserService extends UserStorage {
 
     List<User> getCommonFriends(long userId, long friendId);
 
-    void friend(User user, User anotherUser);
+    void friend(long id1, long id2);
 
-    void unfriend(User user, User anotherUser);
+    void unfriend(long id1, long id2);
 
 }

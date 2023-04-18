@@ -30,37 +30,13 @@ public class FilmDbStorage implements FilmStorage {
 
     private final ResultSetExtractor<Map<Film, List<Genre>>> filmExtractor;
 
-    private final String SQL_ADD_FILM =
-            "INSERT INTO films (FILM_NAME,  DESCRIPTION, RELEASE_DATE, DURATION_MINUTE, MPA_id) " +
-                    "VALUES (?,?,?,?,?);";
-
-    private final String SQL_GET_FILM =
-            "\nSELECT *\n" +
-                    "FROM films f\n" +
-                    "LEFT JOIN genre_films gf ON f.film_id = gf.film_id\n" +
-                    "LEFT JOIN genre g ON gf.genre_id = g.genre_id" +
-                    "WHERE f.film_id = ?";
-
-    private final String SQL_GET_ALL_FILMS =
-            "\nSELECT *\n" +
-                    "FROM films f \n" +
-                    "LEFT JOIN genre_films gf ON f.film_id = gf.film_id\n" +
-                    "LEFT JOIN genre g ON gf.genre_id = g.genre_id";
-
-    private final String SQL_GET_POPULAR_FILMS =
-            "\nSELECT *\n" +
-                    "FROM \n" +
-                    "(SELECT film_id FROM likes_film\n" +
-                    "GROUP BY film_id\n" +
-                    "ORDER by COUNT(user_id) DESC\n" +
-                    "LIMIT ?) popular_film\n" +
-                    "LEFT JOIN films f ON f.film_id = popular_film.film_id\n" +
-                    "LEFT JOIN genre_films gf ON f.film_id = gf.film_id\n" +
-                    "LEFT JOIN genre g ON gf.genre_id = g.genre_id";
-
     @Override
     public Collection<Film> findAll() {
-        var mapGenre = jdbcTemplate.query(SQL_GET_ALL_FILMS, filmExtractor);
+        String sqlGetAllFilms = "\nSELECT *\n" +
+                "FROM films f \n" +
+                "LEFT JOIN genre_films gf ON f.film_id = gf.film_id \n" +
+                "LEFT JOIN genre g ON gf.genre_id = g.genre_id";
+        var mapGenre = jdbcTemplate.query(sqlGetAllFilms, filmExtractor);
         for (var film : mapGenre.entrySet()) {
             film.getKey().setGenres(film.getValue());
 
@@ -70,10 +46,13 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film addFilm(Film film) {
+        String sqlAddFilm =
+                "INSERT INTO films (FILM_NAME,  DESCRIPTION, RELEASE_DATE, DURATION_MINUTE, MPA_id) " +
+                        "VALUES (?,?,?,?,?);";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        PreparedStatementCreator preparedStatementCreator = con -> makeStatement(con, film, SQL_ADD_FILM);
+        PreparedStatementCreator preparedStatementCreator = con -> makeStatement(con, film, sqlAddFilm);
 
         jdbcTemplate.update(preparedStatementCreator, keyHolder);
 
@@ -103,6 +82,11 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film getFilm(long id) {
+        String SQL_GET_FILM = "\nSELECT * \n" +
+                "FROM films f\n" +
+                "LEFT JOIN genre_films gf ON f.film_id = gf.film_id \n" +
+                "LEFT JOIN genre g ON gf.genre_id = g.genre_id \n" +
+                "WHERE f.film_id = ?";
         var mapGenre = jdbcTemplate.query(SQL_GET_FILM, filmExtractor, id);
         for (var film : mapGenre.entrySet()) {
             film.getKey().setGenres(film.getValue());
@@ -126,6 +110,15 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Set<Film> getPopularFilm(int size) {
+        String SQL_GET_POPULAR_FILMS = "\nSELECT * \n" +
+                "FROM \n" +
+                "(SELECT film_id FROM likes_film \n" +
+                "GROUP BY film_id \n" +
+                "ORDER by COUNT(user_id) DESC \n" +
+                "LIMIT ?) popular_film \n" +
+                "LEFT JOIN films f ON f.film_id = popular_film.film_id \n" +
+                "LEFT JOIN genre_films gf ON f.film_id = gf.film_id \n" +
+                "LEFT JOIN genre g ON gf.genre_id = g.genre_id";
         var mapGenre = jdbcTemplate.query(SQL_GET_POPULAR_FILMS, filmExtractor, size);
         for (var film : mapGenre.entrySet()) {
             film.getKey().setGenres(film.getValue());

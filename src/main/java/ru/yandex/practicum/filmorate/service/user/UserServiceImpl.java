@@ -18,16 +18,14 @@ public class UserServiceImpl implements UserService {
 
     private final FriendsStorage friendsStorage;
 
-    public void friend(User user, User anotherUser) {
-        if (anotherUser.equals(user)) throw new RuntimeException("Себя не зафрендить");
-        friendsStorage.friend(user.getId(), anotherUser.getId());
+    @Override
+    public void friend(long id1, long id2) {
+        friendsStorage.friend(id1, id2);
     }
 
-    public void unfriend(User user, User anotherUser) {
-        if (!user.getFriends().containsKey(anotherUser.getId()))
-            throw new RuntimeException("Пользователи не являются друзьями");
-        user.getFriends().remove(anotherUser.getId());
-        anotherUser.getFriends().remove(user.getId());
+    @Override
+    public void unfriend(long id1, long id2) {
+        friendsStorage.unfriend(id1, id2);
     }
 
     @Override
@@ -57,7 +55,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getCommonFriends(long userId, long friendId) {
-        return userStorage.getCommonFriends(userId, friendId);
+        return friendsStorage.getCommonFriends(userId, friendId);
     }
 
 }
