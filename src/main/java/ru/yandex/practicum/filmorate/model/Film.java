@@ -19,8 +19,10 @@ import java.util.List;
 
 @Data
 @Builder
+//@Entity
+//@Table(name = "films", schema = "public")
 public class Film {
-
+    //  @Id
     private long id;
     @NotBlank
     private String name;
@@ -45,7 +47,7 @@ public class Film {
         var id = Long.parseLong(resultSet.getString("film_id"));
         var filmName = resultSet.getString("film_name");
         var description = resultSet.getString("description");
-        var duration = Long.parseLong(resultSet.getString("DURATION_MINUTE"));
+        var duration = Long.parseLong(resultSet.getString("duration_minute"));
         var mpaId = Integer.parseInt(resultSet.getString("mpa_id"));
         var releaseDate = resultSet.getDate("release_date").toLocalDate();
         return builder()

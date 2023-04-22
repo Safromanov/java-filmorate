@@ -39,7 +39,6 @@ public class FilmDbStorage implements FilmStorage {
         var mapGenre = jdbcTemplate.query(sqlGetAllFilms, filmExtractor);
         for (var film : mapGenre.entrySet()) {
             film.getKey().setGenres(film.getValue());
-
         }
         return mapGenre.keySet();
     }

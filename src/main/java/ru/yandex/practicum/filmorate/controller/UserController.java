@@ -18,9 +18,6 @@ public class UserController {
 
     private final UserServiceImpl userService;
 
-    //private final FriendsStorage friendsStorage;
-
-
     @GetMapping
     public Collection<User> findAll() {
         return userService.findAll();

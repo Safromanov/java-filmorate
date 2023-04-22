@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
@@ -15,9 +16,7 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static ru.yandex.practicum.filmorate.model.User.makeUser;
 
@@ -27,6 +26,8 @@ import static ru.yandex.practicum.filmorate.model.User.makeUser;
 public class UserDbStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate customJdbcTemplate;
+
 
     @Override
     public Collection<User> findAll() {
@@ -37,18 +38,43 @@ public class UserDbStorage implements UserStorage {
         return jdbcTemplate.query(preparedStatementCreator, rowMapper);
     }
 
+//    @Override
+//    public User addFilm(User user) {
+//        String sql = "INSERT INTO USERS (LOGIN,  USER_NAME, EMAIL, BIRTHDAY) VALUES (?,?,?,?);";
+//
+//        KeyHolder keyHolder = new GeneratedKeyHolder();
+//
+//        PreparedStatementCreator preparedStatementCreator = con -> makeStatement(con, user, sql);
+//
+//        jdbcTemplate.update(preparedStatementCreator, keyHolder);
+//        user.setId(keyHolder.getKey().longValue());
+//        if (user.getName().isBlank()) user.setName(user.getLogin());
+//        return user;
+//    }
+
     @Override
     public User addFilm(User user) {
-        String sql = "INSERT INTO USERS (LOGIN,  USER_NAME, EMAIL, BIRTHDAY) VALUES (?,?,?,?);";
-
+        String sql = "INSERT INTO USERS (login,  user_name, email, BIRTHDAY) " +
+                "VALUES (:login, :user_name, :email, :BIRTHDAY); ";
         KeyHolder keyHolder = new GeneratedKeyHolder();
+        Map<String, Object> map = new HashMap<>();
+        map.put("login", user.getLogin());
+        map.put("user_name", user.getName());
+        map.put("email", user.getEmail());
+        map.put("BIRTHDAY", user.getBirthday());
 
         PreparedStatementCreator preparedStatementCreator = con -> makeStatement(con, user, sql);
-
         jdbcTemplate.update(preparedStatementCreator, keyHolder);
         user.setId(keyHolder.getKey().longValue());
         if (user.getName().isBlank()) user.setName(user.getLogin());
         return user;
+
+//        customJdbcTemplate.update(sql, keyHolder, map);
+//        long id = customJdbcTemplate.queryForObject(sql, map, Long.class);
+//
+//        user.setId(id);
+        //
+
     }
 
     @Override
@@ -95,6 +121,7 @@ public class UserDbStorage implements UserStorage {
 
     private PreparedStatement makeStatement(Connection con, User user, String sql) throws SQLException {
         PreparedStatement stmt = con.prepareStatement(sql, new String[]{"user_id"});
+
         stmt.setString(1, user.getLogin());
         stmt.setString(2, user.getName());
         stmt.setString(3, user.getEmail());

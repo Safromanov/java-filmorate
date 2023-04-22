@@ -4,14 +4,19 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 @Data
 @AllArgsConstructor
 @Builder
+@Entity
+@Table
 public class Genre {
-
+    @Id
     private final int id;
 
     private String name;

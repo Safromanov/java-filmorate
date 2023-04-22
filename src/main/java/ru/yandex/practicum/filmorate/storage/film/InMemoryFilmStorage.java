@@ -52,9 +52,6 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Set<Film> getPopularFilm(int size) {
         throw new NotYetImplementedException();
-//        return  films.values().stream()
-//                .sorted((x, y) -> x.getIdUsersWhoLike().size() <= y.getIdUsersWhoLike().size()? 1: -1)
-//                .limit(size).collect(Collectors.toList();
     }
 
     @Override
