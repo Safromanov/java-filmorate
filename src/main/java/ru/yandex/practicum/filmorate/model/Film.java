@@ -39,5 +39,9 @@ public class Film {
     @JsonIgnore
     private List<Long> idUsersWhoLike;
 
+    public void addGenre(Genre genre) {
+        genres.add(genre);
+    }
+
 }
 
