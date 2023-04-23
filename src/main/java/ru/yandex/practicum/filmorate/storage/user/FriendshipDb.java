@@ -12,7 +12,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.sql.PreparedStatement;
 import java.util.List;
 
-import static ru.yandex.practicum.filmorate.model.User.makeUser;
+
 
 @Primary
 @Repository
@@ -20,6 +20,7 @@ import static ru.yandex.practicum.filmorate.model.User.makeUser;
 public class FriendshipDb implements FriendsStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final RowMapper<User> userMapper;
 
     @Override
     public void friend(long id1, long id2) {
@@ -64,8 +65,7 @@ public class FriendshipDb implements FriendsStorage {
             stmt.setString(1, String.valueOf(id));
             return stmt;
         };
-        RowMapper<User> rowMapper = (resultSet, rowNum) -> makeUser(resultSet);
-        return jdbcTemplate.query(preparedStatementCreator, rowMapper);
+        return jdbcTemplate.query(preparedStatementCreator, userMapper);
     }
 
     @Override
@@ -89,8 +89,7 @@ public class FriendshipDb implements FriendsStorage {
             stmt.setString(2, String.valueOf(friendId));
             return stmt;
         };
-        RowMapper<User> rowMapper = (resultSet, rowNum) -> makeUser(resultSet);
-        return jdbcTemplate.query(preparedStatementCreator, rowMapper);
+        return jdbcTemplate.query(preparedStatementCreator, userMapper);
 
     }
 

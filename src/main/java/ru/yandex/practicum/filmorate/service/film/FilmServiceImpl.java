@@ -34,7 +34,7 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public Film create(Film film) {
-        filmStorage.addFilm(film);
+        filmStorage.add(film);
 
         film.setGenres(genreDB.addGenresToFilm(film.getId(), film.getGenres()));
 

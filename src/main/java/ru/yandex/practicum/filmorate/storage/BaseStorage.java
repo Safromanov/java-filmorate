@@ -6,7 +6,7 @@ public interface BaseStorage<T> {
 
     Collection<T> findAll();
 
-    T addFilm(T t);
+    T add(T t);
 
     T update(T t);
 

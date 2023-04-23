@@ -61,7 +61,7 @@ public class GenreDBImpl implements GenreDB {
     }
 
     public List<Genre> updateGenresFilm(long filmId, List<Genre> genres) {
-        String sql = "DELETE GENRE_FILMS WHERE film_id = ?;";
+        String sql = "DELETE FROM GENRE_FILMS WHERE film_id = ?;";
         jdbcTemplate.update(sql, filmId);
         return addGenresToFilm(filmId, genres);
     }

@@ -2,108 +2,73 @@ package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Primary;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.*;
-
-import static ru.yandex.practicum.filmorate.model.User.makeUser;
 
 @Primary
 @Repository
 @AllArgsConstructor
 public class UserDbStorage implements UserStorage {
 
-    private final JdbcTemplate jdbcTemplate;
-    private final NamedParameterJdbcTemplate customJdbcTemplate;
+    private final NamedParameterJdbcTemplate jdbcTemplate;
+
+    private final RowMapper<User> userMapper;
 
 
     @Override
     public Collection<User> findAll() {
-        String sql = "select * from Users";
-        RowMapper<User> rowMapper = (resultSet, rowNum) -> makeUser(resultSet);
-
-        PreparedStatementCreator preparedStatementCreator = con -> con.prepareStatement(sql, new String[]{"user_id"});
-        return jdbcTemplate.query(preparedStatementCreator, rowMapper);
+        String sql = "select * from users";
+        return jdbcTemplate.query(sql, userMapper);
     }
 
-//    @Override
-//    public User addFilm(User user) {
-//        String sql = "INSERT INTO USERS (LOGIN,  USER_NAME, EMAIL, BIRTHDAY) VALUES (?,?,?,?);";
-//
-//        KeyHolder keyHolder = new GeneratedKeyHolder();
-//
-//        PreparedStatementCreator preparedStatementCreator = con -> makeStatement(con, user, sql);
-//
-//        jdbcTemplate.update(preparedStatementCreator, keyHolder);
-//        user.setId(keyHolder.getKey().longValue());
-//        if (user.getName().isBlank()) user.setName(user.getLogin());
-//        return user;
-//    }
-
     @Override
-    public User addFilm(User user) {
-        String sql = "INSERT INTO USERS (login,  user_name, email, BIRTHDAY) " +
-                "VALUES (:login, :user_name, :email, :BIRTHDAY); ";
+    public User add(User user) {
+        String sql = "INSERT INTO USERS (login,  user_name, email, birthday) " +
+                "VALUES (:login, :user_name, :email, :birthday); ";
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        Map<String, Object> map = new HashMap<>();
-        map.put("login", user.getLogin());
-        map.put("user_name", user.getName());
-        map.put("email", user.getEmail());
-        map.put("BIRTHDAY", user.getBirthday());
-
-        PreparedStatementCreator preparedStatementCreator = con -> makeStatement(con, user, sql);
-        jdbcTemplate.update(preparedStatementCreator, keyHolder);
+        Map<String, Object> params = new HashMap<>();
+        params.put("login", user.getLogin());
+        params.put("user_name", user.getName());
+        params.put("email", user.getEmail());
+        params.put("birthday", user.getBirthday());
+        SqlParameterSource paramSource = new MapSqlParameterSource(params);
+        jdbcTemplate.update(sql, paramSource, keyHolder);
         user.setId(keyHolder.getKey().longValue());
-        if (user.getName().isBlank()) user.setName(user.getLogin());
         return user;
-
-//        customJdbcTemplate.update(sql, keyHolder, map);
-//        long id = customJdbcTemplate.queryForObject(sql, map, Long.class);
-//
-//        user.setId(id);
-        //
 
     }
 
     @Override
     public User update(User user) {
-        String sql = "UPDATE USERS SET LOGIN=?, USER_NAME=?, EMAIL=?, BIRTHDAY=? WHERE USER_ID=?;";
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-        PreparedStatementCreator preparedStatementCreator = con -> {
-            var stmt = makeStatement(con, user, sql);
-            stmt.setString(5, String.valueOf(user.getId()));
-            return stmt;
-        };
-        if (jdbcTemplate.update(preparedStatementCreator, keyHolder) == 0)
+        String sql = "UPDATE users SET login = :login, user_name = :user_name, email = :email, birthday = :birthday " +
+                "WHERE user_id = :user_id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("login", user.getLogin());
+        params.put("user_name", user.getName());
+        params.put("email", user.getEmail());
+        params.put("birthday", user.getBirthday());
+        params.put("user_id", user.getId());
+        SqlParameterSource paramSource = new MapSqlParameterSource(params);
+        if (jdbcTemplate.update(sql, paramSource) == 0)
             throw new ValidationException("Пользователя не существует");
-        return user;
+       return user;
     }
 
     @Override
     public Optional<User> getUser(long id) {
-        String sql = "select * from Users where user_id = ?;";
-        RowMapper<User> rowMapper = (resultSet, rowNum) -> makeUser(resultSet);
-
-        PreparedStatementCreator preparedStatementCreator = con -> {
-            PreparedStatement stmt = con.prepareStatement(sql, new String[]{"user_id"});
-            stmt.setString(1, String.valueOf(id));
-            return stmt;
-        };
-
+        String sql = "select * from Users where user_id = :user_id;";
+        Map<String, Object> params = Collections.singletonMap("user_id", id);
         try {
-            return Optional.of(jdbcTemplate.query(preparedStatementCreator, rowMapper).get(0));
+            return Optional.ofNullable(jdbcTemplate.queryForObject(sql, params, userMapper));
         } catch (Exception e) {
             throw new ValidationException(e.getLocalizedMessage());
         }
@@ -117,17 +82,6 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<User> getCommonFriends(long userId, long friendId) {
         return null;
-    }
-
-    private PreparedStatement makeStatement(Connection con, User user, String sql) throws SQLException {
-        PreparedStatement stmt = con.prepareStatement(sql, new String[]{"user_id"});
-
-        stmt.setString(1, user.getLogin());
-        stmt.setString(2, user.getName());
-        stmt.setString(3, user.getEmail());
-        stmt.setDate(4, Date.valueOf(user.getBirthday()));
-
-        return stmt;
     }
 
 }

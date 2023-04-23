@@ -34,8 +34,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User addFilm(User user) {
-        return userStorage.addFilm(user);
+    public User add(User user) {
+        if (user.getName().isBlank())
+            user.setName(user.getLogin());
+        return userStorage.add(user);
     }
 
     @Override

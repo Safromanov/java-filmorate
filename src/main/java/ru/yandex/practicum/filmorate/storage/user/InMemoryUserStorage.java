@@ -50,7 +50,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User addFilm(User user) {
+    public User add(User user) {
         changeEmptyUserName(user);
         user.setId(generatorId.getId());
         log.debug("Новый пользователь: {}", user);

@@ -47,8 +47,8 @@ class FilmorateApplicationTests {
                 .name("hope")
                 .birthday(LocalDate.of(1989, 9, 9))
                 .build();
-        userDB.addFilm(user1);
-        userDB.addFilm(user2);
+        userDB.add(user1);
+        userDB.add(user2);
         genresRambo = new ArrayList<Genre>();
         genresRambo.add(Genre.builder().id(1).build());
         genresNemo = new ArrayList<Genre>();
@@ -67,8 +67,8 @@ class FilmorateApplicationTests {
                 .genres(genresNemo)
                 .mpa(MPA.G)
                 .build();
-        filmDb.addFilm(rambo);
-        filmDb.addFilm(nemo);
+        filmDb.add(rambo);
+        filmDb.add(nemo);
     }
 
     @Test

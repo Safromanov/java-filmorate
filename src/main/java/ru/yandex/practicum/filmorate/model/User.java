@@ -22,7 +22,6 @@ public class User {
     @NotBlank
     @Pattern(regexp = "\\S+")
     private String login;
-
     private String name;
     @PastOrPresent
     @NotNull
@@ -32,20 +31,20 @@ public class User {
     @JsonIgnore
     private Set<Long> likedFilms;
 
-    public static User makeUser(ResultSet resultSet) throws SQLException {
-        var id = Long.parseLong(resultSet.getString("user_id"));
-        var email = resultSet.getString("email");
-        var login = resultSet.getString("login");
-        var name = resultSet.getString("user_name");
-        if (name.isBlank()) name = login;
-        var birthday = resultSet.getDate("birthday").toLocalDate();
-        return builder()
-                .id(id)
-                .email(email)
-                .login(login)
-                .name(name)
-                .birthday(birthday)
-                .build();
-    }
+//    public static User makeUser(ResultSet resultSet) throws SQLException {
+//        var id = Long.parseLong(resultSet.getString("user_id"));
+//        var email = resultSet.getString("email");
+//        var login = resultSet.getString("login");
+//        var name = resultSet.getString("user_name");
+//        if (name.isBlank()) name = login;
+//        var birthday = resultSet.getDate("birthday").toLocalDate();
+//        return builder()
+//                .id(id)
+//                .email(email)
+//                .login(login)
+//                .name(name)
+//                .birthday(birthday)
+//                .build();
+//    }
 
 }

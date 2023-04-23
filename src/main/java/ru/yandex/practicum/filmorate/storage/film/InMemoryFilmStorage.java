@@ -33,7 +33,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         return film;
     }
 
-    public Film addFilm(Film film) {
+    public Film add(Film film) {
         film.setId(generatorId.getId());
         log.debug("Новый фильм: {}", film);
         films.put(film.getId(), film);
