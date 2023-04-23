@@ -25,9 +25,9 @@ public class FriendshipDb implements FriendsStorage {
 
     @Override
     public void friend(long id1, long id2) {
-        Integer[] friendshipStatus = getFriendshipStatus(id1, id2);
-        if (friendshipStatus[0] == 1)
-            throw new ValidationException("Пользователь уже добавлен в друзья");
+//        Integer[] friendshipStatus = getFriendshipStatus(id1, id2);
+//        if (friendshipStatus[0] == 1)
+//            throw new ValidationException("Пользователь уже добавлен в друзья");
         String sql = "INSERT INTO friendship (user_id,  friend_id) VALUES (:user_id, :friend_id);";
         var params = createParam(id1, id2);
         try {
@@ -39,7 +39,6 @@ public class FriendshipDb implements FriendsStorage {
 
     @Override
     public void unfriend(long id1, long id2) {
-        Integer[] friendshipStatus = getFriendshipStatus(id1, id2);
         String sql = "DELETE FROM friendship WHERE user_id = :user_id and friend_id = :friend_id;";
         var params = createParam(id1, id2);
 
@@ -74,20 +73,6 @@ public class FriendshipDb implements FriendsStorage {
         var params = createParam(userId, friendId);
         return jdbcTemplate.query(sqlGetCommonFriends, params, userMapper);
 
-    }
-
-
-    /* friendStatus[0] = rs.getInt(1); - 0 - не добавлял, 1 - добавил в друзья, 2 - в колонке задвоение, что-то идёт не так
-       friendStatus[1] = rs.getInt(2); 1 1 - друзья 0 1 второй добавил первого и наоборот для 1 0 */
-    private Integer[] getFriendshipStatus(long id1, long id2) {
-        String sql = "SELECT COUNT(CASE WHEN user_id = :user_id AND friend_id = :friend_id THEN 1 ELSE NULL END ), " +
-                "COUNT(CASE WHEN user_id = :friend_id AND friend_id = :user_id THEN 1 ELSE NULL END) FROM friendship;";
-
-        var params = createParam(id1, id2);
-
-        RowMapper<Integer[]> rowMapper = (rs, rowNum) -> new Integer[]{rs.getInt(1), rs.getInt(2)};
-
-        return jdbcTemplate.query(sql, params, rowMapper).get(0);
     }
 
     private Map<String, Long> createParam(long id1, long id2) {
