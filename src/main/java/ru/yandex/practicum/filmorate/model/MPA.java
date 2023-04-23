@@ -6,12 +6,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 
-@Entity
+
 @RequiredArgsConstructor
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum MPA {

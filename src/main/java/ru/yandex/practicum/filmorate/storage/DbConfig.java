@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage.user;
+package ru.yandex.practicum.filmorate.storage;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

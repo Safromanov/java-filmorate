@@ -11,20 +11,19 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import java.sql.PreparedStatement;
 import java.util.List;
 
-import static ru.yandex.practicum.filmorate.model.Genre.makeGenre;
-
 @Repository
 @RequiredArgsConstructor
 public class GenreDBImpl implements GenreDB {
 
     private final JdbcTemplate jdbcTemplate;
 
+    private final RowMapper<Genre> genreMapper;
+
     public Genre getGenre(int id) {
         String sql = "SELECT * FROM genre WHERE genre_id = ?;";
-        RowMapper<Genre> rowMapper = (resultSet, rowNum) -> makeGenre(resultSet);
         try {
             return jdbcTemplate.queryForObject(
-                    sql, rowMapper, id);
+                    sql, genreMapper, id);
         } catch (Exception e) {
             throw new ValidationException("Этого жанра нет в базе =(");
         }
@@ -32,16 +31,14 @@ public class GenreDBImpl implements GenreDB {
 
     public List<Genre> findAll() {
         String sql = "SELECT * FROM genre";
-        RowMapper<Genre> rowMapper = (resultSet, rowNum) -> makeGenre(resultSet);
         PreparedStatementCreator preparedStatementCreator = con -> con.prepareStatement(sql, new String[]{"genre_id"});
         return jdbcTemplate.query(
                 preparedStatementCreator,
-                rowMapper);
+                genreMapper);
     }
 
     public List<Genre> findGenresFilm(long filmId) {
         String sql = "SELECT * FROM GENRE_FILMS gf INNER JOIN genre g ON g.genre_id = gf.genre_id  WHERE film_id = ?";
-        RowMapper<Genre> rowMapper = (resultSet, rowNum) -> makeGenre(resultSet);
         PreparedStatementCreator preparedStatementCreator = con -> {
             PreparedStatement stmt = con.prepareStatement(sql, new String[]{"genre_id", "film_id"});
             stmt.setString(1, String.valueOf(filmId));
@@ -49,7 +46,7 @@ public class GenreDBImpl implements GenreDB {
         };
         return jdbcTemplate.query(
                 preparedStatementCreator,
-                rowMapper);
+                genreMapper);
     }
 
     public List<Genre> addGenresToFilm(long filmId, List<Genre> genres) {
