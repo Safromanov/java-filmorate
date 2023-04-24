@@ -2,21 +2,20 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.web.bind.annotation.*;
-
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.user.UserServiceImpl;
 
-
 import javax.validation.Valid;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 
 @Slf4j
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
+
     private final UserServiceImpl userService;
 
     @GetMapping
@@ -26,7 +25,7 @@ public class UserController {
 
     @PostMapping
     public User create(@Valid @RequestBody User user) {
-        return userService.create(user);
+        return userService.add(user);
     }
 
     @PutMapping
@@ -36,7 +35,7 @@ public class UserController {
 
     @GetMapping("{id}")
     public User getUser(@PathVariable long id) {
-        return userService.getUser(id);
+        return userService.getUser(id).get();
     }
 
     @GetMapping("{id}/friends")
@@ -50,13 +49,13 @@ public class UserController {
     }
 
     @PutMapping("{id}/friends/{friendId}")
-    public void friend(@PathVariable long id, @PathVariable long friendId){
-        userService.friend(userService.getUser(id), userService.getUser(friendId));
+    public void friend(@PathVariable long id, @PathVariable long friendId) {
+        userService.friend(id, friendId);
     }
 
-    @DeleteMapping ("{id}/friends/{friendId}")
-    public void unfriend(@PathVariable long id, @PathVariable long friendId){
-        userService.unfriend(userService.getUser(id), userService.getUser(friendId));
+    @DeleteMapping("{id}/friends/{friendId}")
+    public void unfriend(@PathVariable long id, @PathVariable long friendId) {
+        userService.unfriend(id, friendId);
     }
 
 }

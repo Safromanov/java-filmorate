@@ -1,29 +1,31 @@
 package ru.yandex.practicum.filmorate.service.user;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.storage.user.friends.FriendsStorage;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-    private UserStorage userStorage;
 
-    public void friend(User user, User anotherUser) {
-        if (anotherUser.equals(user)) throw new RuntimeException("Себя не зафрендить");
-        user.getFriends().add(anotherUser.getId());
-        anotherUser.getFriends().add(user.getId());
+    private final UserStorage userStorage;
+
+    private final FriendsStorage friendsStorage;
+
+    @Override
+    public void friend(long id1, long id2) {
+        friendsStorage.friend(id1, id2);
     }
 
-    public void unfriend(User user, User anotherUser){
-        if (!user.getFriends().contains(anotherUser.getId()))
-            throw new RuntimeException("Пользователи не являются друзьями");
-        user.getFriends().remove(anotherUser.getId());
-        anotherUser.getFriends().remove(user.getId());
+    @Override
+    public void unfriend(long id1, long id2) {
+        friendsStorage.unfriend(id1, id2);
     }
 
     @Override
@@ -32,8 +34,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User create(User user) {
-        return userStorage.create(user);
+    public User add(User user) {
+        if (user.getName().isBlank())
+            user.setName(user.getLogin());
+        return userStorage.add(user);
     }
 
     @Override
@@ -42,17 +46,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUser(long id) {
+    public Optional<User> getUser(long id) {
         return userStorage.getUser(id);
     }
 
     @Override
     public List<User> getFriends(long id) {
-        return userStorage.getFriends(id);
+        return friendsStorage.getFriends(id);
     }
 
     @Override
     public List<User> getCommonFriends(long userId, long friendId) {
-        return userStorage.getCommonFriends(userId, friendId);
+        return friendsStorage.getCommonFriends(userId, friendId);
     }
+
 }
