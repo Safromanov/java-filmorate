@@ -27,7 +27,6 @@ public class FilmMapper implements RowMapper<Film> {
                 .mpa(MPA.findValue(mpaId))
                 .releaseDate(releaseDate)
                 .build();
-
     }
 
 }

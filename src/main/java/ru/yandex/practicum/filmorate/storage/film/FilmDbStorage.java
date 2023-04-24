@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
 
-    private final NamedParameterJdbcTemplate customJdbcTemplate;
+    private final NamedParameterJdbcTemplate jdbcTemplate;
     private final ResultSetExtractor<Map<Film, List<Genre>>> filmExtractor;
 
     @Override
@@ -29,10 +29,7 @@ public class FilmDbStorage implements FilmStorage {
         String sqlGetAllFilms = "SELECT * FROM films f \n" +
                 "LEFT JOIN genre_films gf ON f.film_id = gf.film_id \n" +
                 "LEFT JOIN genre g ON gf.genre_id = g.genre_id";
-        var mapGenre = customJdbcTemplate.query(sqlGetAllFilms, filmExtractor);
-        for (var film : mapGenre.entrySet()) {
-            film.getKey().setGenres(film.getValue());
-        }
+        var mapGenre = jdbcTemplate.query(sqlGetAllFilms, filmExtractor);
         return mapGenre.keySet();
     }
 
@@ -50,10 +47,8 @@ public class FilmDbStorage implements FilmStorage {
         params.put("MPA_id", film.getMpa().getId());
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
-
         SqlParameterSource paramSource = new MapSqlParameterSource(params);
-
-        customJdbcTemplate.update(sqlAddFilm, paramSource, keyHolder);
+        jdbcTemplate.update(sqlAddFilm, paramSource, keyHolder);
 
         film.setId(keyHolder.getKey().longValue());
         return film;
@@ -74,8 +69,7 @@ public class FilmDbStorage implements FilmStorage {
         params.put("duration_minute", film.getDuration().getSeconds());
         params.put("MPA_id", film.getMpa().getId());
         params.put("film_id", film.getId());
-
-        if (customJdbcTemplate.update(sql, params) == 0)
+        if (jdbcTemplate.update(sql, params) == 0)
             throw new ValidationException("Фильма не существует");
 
         return film;
@@ -88,13 +82,10 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN genre g ON gf.genre_id = g.genre_id \n" +
                 "WHERE f.film_id = :film_id";
         var params = Collections.singletonMap("film_id", id);
-        var mapGenre = customJdbcTemplate.query(sqlGetFilm, params, filmExtractor);
-
-        for (var film : mapGenre.entrySet()) {
-            film.getKey().setGenres(film.getValue());
-            return film.getKey();
-        }
-        throw new ValidationException("Неверный id");
+        var film = jdbcTemplate.query(sqlGetFilm, params, filmExtractor).keySet().stream().findAny();
+        if (film.isPresent())
+            return film.get();
+        else throw new ValidationException("Неверный id");
     }
 
     @Override
@@ -103,7 +94,7 @@ public class FilmDbStorage implements FilmStorage {
         Map<String, Object> params = new HashMap<>();
         params.put("film_id", filmId);
         params.put("user_id", userId);
-        customJdbcTemplate.update(sql, params);
+        jdbcTemplate.update(sql, params);
     }
 
     @Override
@@ -112,7 +103,7 @@ public class FilmDbStorage implements FilmStorage {
         Map<String, Object> params = new HashMap<>();
         params.put("film_id", filmId);
         params.put("user_id", userId);
-        if (customJdbcTemplate.update(sql, params) == 0)
+        if (jdbcTemplate.update(sql, params) == 0)
             throw new ValidationException("Введён несуществующий id");
     }
 
@@ -129,10 +120,7 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN genre g ON gf.genre_id = g.genre_id";
 
         var param = Collections.singletonMap("size", size);
-        var mapGenre = customJdbcTemplate.query(sqlGetPopularFilms, param, filmExtractor);
-        for (var film : mapGenre.entrySet()) {
-            film.getKey().setGenres(film.getValue());
-        }
+        var mapGenre = jdbcTemplate.query(sqlGetPopularFilms, param, filmExtractor);
         var listPopular = mapGenre.keySet();
         if (listPopular.isEmpty())
             listPopular = findAll().stream().limit(size).collect(Collectors.toSet());

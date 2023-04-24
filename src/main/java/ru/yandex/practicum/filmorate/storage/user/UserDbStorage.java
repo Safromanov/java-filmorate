@@ -23,7 +23,6 @@ public class UserDbStorage implements UserStorage {
 
     private final RowMapper<User> userMapper;
 
-
     @Override
     public Collection<User> findAll() {
         String sql = "select * from users";

@@ -24,20 +24,21 @@ public class FilmExtractor implements ResultSetExtractor<Map<Film, List<Genre>>>
 
         Map<Film, List<Genre>> data = new LinkedHashMap<>();
         Map<Long, Film> mapId = new HashMap<>();
+        Film film;
         while (rs.next()) {
             var genre = genreMapper.mapRow(rs, 1);
             var filmId = rs.getLong("film_id");
-            Film film;
+
             if (mapId.containsKey(filmId))
                 film = mapId.get(filmId);
             else {
                 film = filmMapper.mapRow(rs, 1);
+                film.setGenres(new ArrayList<>());
                 data.put(film, new ArrayList<>());
                 mapId.put(film.getId(), film);
             }
             if (genre != null) {
                 film.addGenre(genre);
-                data.get(film).add(genre);
             }
         }
         return data;
