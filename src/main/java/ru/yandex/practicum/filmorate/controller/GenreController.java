@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.storage.film.GenreDBImpl;
+import ru.yandex.practicum.filmorate.storage.film.GenreDAO.GenreDBImpl;
 
 import java.util.Collection;
 

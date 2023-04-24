@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.film.GenreDB;
+import ru.yandex.practicum.filmorate.storage.film.GenreDAO.GenreDB;
 
 import java.util.Collection;
 import java.util.Set;
@@ -34,7 +34,7 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public Film create(Film film) {
-        filmStorage.addFilm(film);
+        filmStorage.add(film);
 
         film.setGenres(genreDB.addGenresToFilm(film.getId(), film.getGenres()));
 

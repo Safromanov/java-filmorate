@@ -3,8 +3,8 @@ package ru.yandex.practicum.filmorate.service.user;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.user.FriendsStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.storage.user.friends.FriendsStorage;
 
 import java.util.Collection;
 import java.util.List;
@@ -34,8 +34,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User addFilm(User user) {
-        return userStorage.addFilm(user);
+    public User add(User user) {
+        if (user.getName().isBlank())
+            user.setName(user.getLogin());
+        return userStorage.add(user);
     }
 
     @Override

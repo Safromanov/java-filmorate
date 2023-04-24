@@ -18,9 +18,6 @@ public class UserController {
 
     private final UserServiceImpl userService;
 
-    //private final FriendsStorage friendsStorage;
-
-
     @GetMapping
     public Collection<User> findAll() {
         return userService.findAll();
@@ -28,7 +25,7 @@ public class UserController {
 
     @PostMapping
     public User create(@Valid @RequestBody User user) {
-        return userService.addFilm(user);
+        return userService.add(user);
     }
 
     @PutMapping
