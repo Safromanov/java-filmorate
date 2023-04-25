@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.film.GenreDAO.GenreDB;
+import ru.yandex.practicum.filmorate.storage.film.GenreDb.GenreDB;
 
 import java.util.Collection;
 import java.util.Set;

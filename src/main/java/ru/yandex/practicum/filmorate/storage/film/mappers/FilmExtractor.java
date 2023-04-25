@@ -33,7 +33,6 @@ public class FilmExtractor implements ResultSetExtractor<Map<Film, List<Genre>>>
                 film = mapId.get(filmId);
             else {
                 film = filmMapper.mapRow(rs, 1);
-                film.setGenres(new ArrayList<>());
                 data.put(film, new ArrayList<>());
                 mapId.put(film.getId(), film);
             }

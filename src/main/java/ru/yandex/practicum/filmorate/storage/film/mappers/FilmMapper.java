@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.model.MPA;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.util.ArrayList;
 
 @Component
 public class FilmMapper implements RowMapper<Film> {
@@ -26,6 +27,7 @@ public class FilmMapper implements RowMapper<Film> {
                 .duration(Duration.ofSeconds(duration))
                 .mpa(MPA.findValue(mpaId))
                 .releaseDate(releaseDate)
+                .genres(new ArrayList<>())
                 .build();
     }
 
