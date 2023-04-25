@@ -2,5 +2,5 @@
 
 ## Схема БД
 
-![Схема БД](src/main/resources/filmorate_DB.jpg)
+![Схема БД](src/main/resources/filmorate_DB.jpg) 
 
