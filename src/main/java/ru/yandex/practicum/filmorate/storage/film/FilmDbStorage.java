@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.film;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -10,6 +11,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 
@@ -23,6 +25,8 @@ public class FilmDbStorage implements FilmStorage {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final ResultSetExtractor<Map<Film, List<Genre>>> filmExtractor;
+
+    private final RowMapper<Director> dirMapper;
 
     @Override
     public Collection<Film> findAll() {
@@ -141,6 +145,10 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     public Collection<Film> getSortFilmsByDirector(long id, String sortBy) {
+
+        String sqlCheckDir = "SELECT * FROM directors WHERE director_id = :director_id";
+
+
         String sqlYearSort = "\nSELECT * \n" +
                 "FROM \n" +
                 "(SELECT film_id, director_id FROM director_films\n" +
@@ -160,13 +168,19 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN genre g ON gf.genre_id = g.genre_id \n" +
                 "LEFT JOIN directors d ON df.director_id = d.director_id\n" +
                 "LEFT JOIN likes_film lf ON f.film_id = lf.film_id\n" +
-                "WHERE df.director_id =  1\n" +
+                "WHERE df.director_id =  :director_id\n" +
                 "group by df.film_id\n" +
                 "ORDER BY COUNT(lf.USER_ID);\n";
 
         var param = Collections.singletonMap("director_id", id);
+
+        if (jdbcTemplate.query(sqlCheckDir, param, dirMapper).size() == 0)
+            throw new ValidationException("Режиссера не существует");
+
         if (Objects.equals(sortBy, "year")) return jdbcTemplate.query(sqlYearSort, param, filmExtractor).keySet();
         if (Objects.equals(sortBy, "likes")) return jdbcTemplate.query(sqlLikesSort, param, filmExtractor).keySet();
+
+
         throw new ValidationException("Неподдерживаемый параметр сортировки");
     }
 
