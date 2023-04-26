@@ -31,6 +31,11 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
+    public Collection<Film> getSortFilmsByDirector(long id, String sortBy) {
+        return filmStorage.getSortFilmsByDirector(id, sortBy);
+    }
+
+    @Override
     public Collection<Film> findAll() {
         return filmStorage.findAll();
     }

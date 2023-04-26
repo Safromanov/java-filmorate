@@ -65,4 +65,9 @@ public class InMemoryFilmStorage implements FilmStorage {
         throw new NotYetImplementedException();
     }
 
+    @Override
+    public Collection<Film> getSortFilmsByDirector(long id, String sortBy) {
+        return null;
+    }
+
 }
