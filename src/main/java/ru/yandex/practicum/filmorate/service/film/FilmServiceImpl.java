@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.film.GenreDb.GenreDB;
+import ru.yandex.practicum.filmorate.storage.film.directorDb.DirectorDb;
 
 import java.util.Collection;
 import java.util.Set;
@@ -17,6 +18,8 @@ public class FilmServiceImpl implements FilmService {
     private final FilmStorage filmStorage;
 
     private final GenreDB genreDB;
+
+    private final DirectorDb directorDb;
 
 
     public void likeFilm(long filmId, long userId) {
