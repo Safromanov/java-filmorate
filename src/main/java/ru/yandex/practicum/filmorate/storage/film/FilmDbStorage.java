@@ -126,7 +126,7 @@ public class FilmDbStorage implements FilmStorage {
                 "FROM \n" +
                 "(SELECT film_id FROM likes_film \n" +
                 "GROUP BY film_id \n" +
-                "ORDER by COUNT(user_id) DESC \n" +
+                "ORDER BY COUNT(user_id) DESC \n" +
                 "LIMIT :size) popular_film \n" +
                 "LEFT JOIN films f ON f.film_id = popular_film.film_id \n" +
                 "LEFT JOIN genre_films gf ON f.film_id = gf.film_id \n" +
@@ -134,11 +134,40 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN director_films df ON f.film_id = df.film_id \n" +
                 "LEFT JOIN directors d ON df.director_id = d.director_id \n;";
         var param = Collections.singletonMap("size", size);
-        var mapGenre = jdbcTemplate.query(sqlGetPopularFilms, param, filmExtractor);
-        var listPopular = mapGenre.keySet();
+        var listPopular = jdbcTemplate.query(sqlGetPopularFilms, param, filmExtractor).keySet();
         if (listPopular.isEmpty())
             listPopular = findAll().stream().limit(size).collect(Collectors.toSet());
         return listPopular;
+    }
+
+    public Collection<Film> getSortFilmsByDirector(long id, String sortBy) {
+        String sqlYearSort = "\nSELECT * \n" +
+                "FROM \n" +
+                "(SELECT film_id, director_id FROM director_films\n" +
+                "WHERE director_id =  :director_id" +
+                ") film_by_director\n" +
+                "LEFT JOIN films f ON f.film_id = film_by_director.film_id \n" +
+                "LEFT JOIN genre_films gf ON f.film_id = gf.film_id \n" +
+                "LEFT JOIN genre g ON gf.genre_id = g.genre_id \n" +
+                "LEFT JOIN directors d ON film_by_director.director_id = d.director_id\n" +
+                "ORDER BY YEAR(f.release_date);";
+
+        String sqlLikesSort = "\n" +
+                "SELECT * FROM " +
+                " director_films df\n" +
+                "LEFT JOIN films f ON f.film_id = df.film_id \n" +
+                "LEFT JOIN genre_films gf ON f.film_id = gf.film_id \n" +
+                "LEFT JOIN genre g ON gf.genre_id = g.genre_id \n" +
+                "LEFT JOIN directors d ON df.director_id = d.director_id\n" +
+                "LEFT JOIN likes_film lf ON f.film_id = lf.film_id\n" +
+                "WHERE df.director_id =  1\n" +
+                "group by df.film_id\n" +
+                "ORDER BY COUNT(lf.USER_ID);\n";
+
+        var param = Collections.singletonMap("director_id", id);
+        if (Objects.equals(sortBy, "year")) return jdbcTemplate.query(sqlYearSort, param, filmExtractor).keySet();
+        if (Objects.equals(sortBy, "likes")) return jdbcTemplate.query(sqlLikesSort, param, filmExtractor).keySet();
+        throw new ValidationException("Неподдерживаемый параметр сортировки");
     }
 
 }
