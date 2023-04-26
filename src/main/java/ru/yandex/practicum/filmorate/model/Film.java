@@ -30,7 +30,7 @@ public class Film {
     private LocalDate releaseDate;
 
     private MPA mpa;
-
+    private List<Director> directors;
     private List<Genre> genres;
     @NotNull
     @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT)
@@ -41,6 +41,10 @@ public class Film {
 
     public void addGenre(Genre genre) {
         genres.add(genre);
+    }
+
+    public void addDirector(Director director) {
+        directors.add(director);
     }
 
 }

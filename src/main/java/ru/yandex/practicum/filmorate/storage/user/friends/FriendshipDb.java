@@ -25,17 +25,50 @@ public class FriendshipDb implements FriendsStorage {
 
     @Override
     public void friend(long id1, long id2) {
-//        Integer[] friendshipStatus = getFriendshipStatus(id1, id2);
-//        if (friendshipStatus[0] == 1)
-//            throw new ValidationException("Пользователь уже добавлен в друзья");
-        String sql = "INSERT INTO friendship (user_id,  friend_id) VALUES (:user_id, :friend_id);";
-        var params = createParam(id1, id2);
         try {
-            jdbcTemplate.update(sql, params);
+            var friendsIdUserOne = getListFriends(id1);
+            var friendsIdUserTwo = getListFriends(id1);
+
+            if (isNotEquals(id1, id2)) {
+                if (friendsIdUserOne.contains(id2)) {
+                    throw new IllegalArgumentException("Пользователь уже добавлен в друзья");
+                }
+
+                if (friendsIdUserTwo.contains(id1)) {
+                    String sqlDel = "DELETE FROM FRIENDSHIP WHERE USER_ID = :friend_id AND FRIEND_ID = :user_id";
+                    var paramsDel = createParam(id1, id2); //!!!
+                    jdbcTemplate.update(sqlDel, paramsDel);
+
+                    String sqlAddFirst = "INSERT INTO FRIENDSHIP (USER_ID,FRIEND_ID,IS_CONFIRM)" +
+                            "VALUES (:user_id,:friend_id,TRUE),\n" +
+                            "(:friend_id,:user_id,TRUE);";
+                    var paramsAdd = createParam(id1, id2);
+                    jdbcTemplate.update(sqlAddFirst, paramsAdd);
+                } else {
+                    String sqlAddFirst = "INSERT INTO FRIENDSHIP (USER_ID,FRIEND_ID,IS_CONFIRM)" +
+                            "VALUES (:user_id,:friend_id,FALSE)";
+                    var paramsAdd = createParam(id1, id2);
+
+                    jdbcTemplate.update(sqlAddFirst, paramsAdd);
+
+                }
+            }
         } catch (RuntimeException e) {
             throw new ValidationException("Неверный id");
         }
     }
+
+    private List<Long> getListFriends(long id) {
+        String sqlFriends = "SELECT USER_ID " +
+                "\tFROM FRIENDSHIP \n" +
+                "\tWHERE USER_ID = :user_id";
+
+        Map<String, Object> paramsFriends = new HashMap<>();
+        paramsFriends.put("user_id", id);
+
+        return jdbcTemplate.queryForList(sqlFriends, paramsFriends, Long.class);
+    }
+
 
     @Override
     public void unfriend(long id1, long id2) {
@@ -80,6 +113,13 @@ public class FriendshipDb implements FriendsStorage {
         params.put("user_id", id1);
         params.put("friend_id", id2);
         return params;
+    }
+
+    private boolean isNotEquals(Long id1, Long id2) {
+        if (id1.equals(id2)) {
+            throw new ValidationException("Пользователь не может совершать действие с самим собой (id № " + id1 + " )");
+        }
+        return true;
     }
 
 }

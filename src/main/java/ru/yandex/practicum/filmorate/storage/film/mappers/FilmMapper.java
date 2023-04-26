@@ -28,6 +28,7 @@ public class FilmMapper implements RowMapper<Film> {
                 .mpa(MPA.findValue(mpaId))
                 .releaseDate(releaseDate)
                 .genres(new ArrayList<>())
+                .directors(new ArrayList<>())
                 .build();
     }
 

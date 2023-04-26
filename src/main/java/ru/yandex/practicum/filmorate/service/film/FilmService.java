@@ -20,4 +20,6 @@ public interface FilmService {
     void likeFilm(long filmId, long userId);
 
     void removeLike(long filmId, long userId);
+
+    Collection<Film> getSortFilmsByDirector(long id, String count);
 }
