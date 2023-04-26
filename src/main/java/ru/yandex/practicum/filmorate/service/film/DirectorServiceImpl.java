@@ -34,4 +34,9 @@ public class DirectorServiceImpl implements DirectorService {
         return directorDb.update(director);
     }
 
+    @Override
+    public Void deleteDirector(long id) {
+        return directorDb.deleteDirector(id);
+    }
+
 }

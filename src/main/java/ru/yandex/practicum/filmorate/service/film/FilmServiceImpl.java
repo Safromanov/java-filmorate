@@ -41,6 +41,8 @@ public class FilmServiceImpl implements FilmService {
 
         film.setGenres(genreDB.addGenresToFilm(film.getId(), film.getGenres()));
 
+        film.setDirectors(directorDb.addDirectorToFilm(film.getId(), film.getDirectors()));
+
         return film;
     }
 
@@ -49,6 +51,8 @@ public class FilmServiceImpl implements FilmService {
         filmStorage.update(film);
 
         film.setGenres(genreDB.updateGenresFilm(film.getId(), film.getGenres()));
+
+        film.setDirectors(directorDb.updateDirectorFilm(film.getId(), film.getDirectors()));
 
         return film;
     }
