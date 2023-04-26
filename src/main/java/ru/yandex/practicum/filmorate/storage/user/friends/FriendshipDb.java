@@ -4,11 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,8 +20,6 @@ import java.util.Map;
 public class FriendshipDb implements FriendsStorage {
 
     private final RowMapper<User> userMapper;
-
-    private final UserDbStorage userStorage;
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
@@ -44,19 +40,17 @@ public class FriendshipDb implements FriendsStorage {
     @Override
     public void friend(long id1, long id2) {
         try {
-       // User user1 = userStorage.getUser(id1).get();
-       // User user2 = userStorage.getUser(id2).get();
-            Map<Long,Boolean> list1 = listFriends(id1);
-           Map<Long,Boolean> list2 = listFriends(id1);
+            var friendsIdUserOne = getListFriends(id1);
+            var friendsIdUserTwo = getListFriends(id1);
 
-        if (isNotEquals(id1,id2)) {
-            if (list1.containsKey(id2)) {
-                throw new IllegalArgumentException("Пользователь уже добавлен в друзья");
-            }
+            if (isNotEquals(id1, id2)) {
+                if (friendsIdUserOne.contains(id2)) {
+                    throw new IllegalArgumentException("Пользователь уже добавлен в друзья");
+                }
 
-                if (list2.containsKey(id1)) {
+                if (friendsIdUserTwo.contains(id1)) {
                     String sqlDel = "DELETE FROM FRIENDSHIP WHERE USER_ID = :friend_id AND FRIEND_ID = :user_id";
-                    var paramsDel = createParam(id1,id2); //!!!
+                    var paramsDel = createParam(id1, id2); //!!!
                     jdbcTemplate.update(sqlDel, paramsDel);
 
                     String sqlAddFirst = "INSERT INTO FRIENDSHIP (USER_ID,FRIEND_ID,IS_CONFIRM)" +
@@ -71,27 +65,22 @@ public class FriendshipDb implements FriendsStorage {
 
                     jdbcTemplate.update(sqlAddFirst, paramsAdd);
 
-        }
-        }
-        }
-        catch (RuntimeException e) {
+                }
+            }
+        } catch (RuntimeException e) {
             throw new ValidationException("Неверный id");
         }
     }
-    private Map<Long,Boolean> listFriends(long id) {
-        String sqlFriends = "SELECT USER_ID,IS_CONFIRM " +
+
+    private List<Long> getListFriends(long id) {
+        String sqlFriends = "SELECT USER_ID " +
                 "\tFROM FRIENDSHIP \n" +
                 "\tWHERE USER_ID = :user_id";
 
-        HashMap<Long, Boolean> map = new HashMap<>();
-
         Map<String, Object> paramsFriends = new HashMap<>();
-        paramsFriends.put("user_id",id);
-        SqlRowSet rsMap = jdbcTemplate.queryForRowSet(sqlFriends, paramsFriends );
-        while (rsMap.next()) {
-            map.put(rsMap.getLong("FRIEND_ID"), rsMap.getBoolean("IS_CONFIRM"));
-        }
-        return map;
+        paramsFriends.put("user_id", id);
+
+        return jdbcTemplate.queryForList(sqlFriends, paramsFriends, Long.class);
     }
 
 
