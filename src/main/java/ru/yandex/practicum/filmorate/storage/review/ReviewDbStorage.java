@@ -69,6 +69,9 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public void setLike(long reviewId, long userId) {
+        if (getReview(reviewId) == null) {
+            throw new ValidationException("Отзыва с id " + reviewId + "не существует");
+        }
         idValidation(reviewId, userId);
         String sql = "MERGE INTO LIKES_REVIEW KEY (REVIEW_ID, USER_ID) VALUES (?, ?, TRUE)";
         jdbcTemplate.update(sql, reviewId, userId);
@@ -85,6 +88,9 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public void setDislike(long reviewId, long userId) {
+        if (getReview(reviewId) == null) {
+            throw new ValidationException("Отзыва с id " + reviewId + "не существует");
+        }
         idValidation(reviewId, userId);
         String sql = "MERGE INTO LIKES_REVIEW KEY (REVIEW_ID, USER_ID) VALUES (?, ?, FALSE)";
         jdbcTemplate.update(sql, reviewId, userId);
