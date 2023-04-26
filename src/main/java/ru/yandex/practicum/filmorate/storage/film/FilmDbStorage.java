@@ -28,7 +28,9 @@ public class FilmDbStorage implements FilmStorage {
     public Collection<Film> findAll() {
         String sqlGetAllFilms = "SELECT * FROM films f \n" +
                 "LEFT JOIN genre_films gf ON f.film_id = gf.film_id \n" +
-                "LEFT JOIN genre g ON gf.genre_id = g.genre_id";
+                "LEFT JOIN genre g ON gf.genre_id = g.genre_id " +
+                "LEFT JOIN director_films df ON f.film_id = df.film_id \n" +
+                "LEFT JOIN directors d ON df.director_id = d.director_id ;";
         var mapGenre = jdbcTemplate.query(sqlGetAllFilms, filmExtractor);
         return mapGenre.keySet();
     }
@@ -80,7 +82,9 @@ public class FilmDbStorage implements FilmStorage {
         String sqlGetFilm = "SELECT * FROM films f \n" +
                 "LEFT JOIN genre_films gf ON f.film_id = gf.film_id \n" +
                 "LEFT JOIN genre g ON gf.genre_id = g.genre_id \n" +
-                "WHERE f.film_id = :film_id";
+                "LEFT JOIN director_films df ON f.film_id = df.film_id \n" +
+                "LEFT JOIN directors d ON df.director_id = d.director_id \n" +
+                "WHERE f.film_id = :film_id ;";
         var params = Collections.singletonMap("film_id", id);
         var film = jdbcTemplate.query(sqlGetFilm, params, filmExtractor).keySet().stream().findAny();
         if (film.isPresent())
@@ -117,8 +121,9 @@ public class FilmDbStorage implements FilmStorage {
                 "LIMIT :size) popular_film \n" +
                 "LEFT JOIN films f ON f.film_id = popular_film.film_id \n" +
                 "LEFT JOIN genre_films gf ON f.film_id = gf.film_id \n" +
-                "LEFT JOIN genre g ON gf.genre_id = g.genre_id";
-
+                "LEFT JOIN genre g ON gf.genre_id = g.genre_id \n" +
+                "LEFT JOIN director_films df ON f.film_id = df.film_id \n" +
+                "LEFT JOIN directors d ON df.director_id = d.director_id \n;";
         var param = Collections.singletonMap("size", size);
         var mapGenre = jdbcTemplate.query(sqlGetPopularFilms, param, filmExtractor);
         var listPopular = mapGenre.keySet();

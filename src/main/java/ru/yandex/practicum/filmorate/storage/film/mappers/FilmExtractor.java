@@ -5,6 +5,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 
@@ -18,6 +19,8 @@ public class FilmExtractor implements ResultSetExtractor<Map<Film, List<Genre>>>
 
     private final RowMapper<Film> filmMapper;
     private final RowMapper<Genre> genreMapper;
+    private final RowMapper<Director> directorMapper;
+
 
     @Override
     public Map<Film, List<Genre>> extractData(ResultSet rs) throws SQLException, DataAccessException {
@@ -27,6 +30,7 @@ public class FilmExtractor implements ResultSetExtractor<Map<Film, List<Genre>>>
         Film film;
         while (rs.next()) {
             var genre = genreMapper.mapRow(rs, 1);
+            var director = directorMapper.mapRow(rs, 1);
             var filmId = rs.getLong("film_id");
 
             if (mapId.containsKey(filmId))
@@ -38,6 +42,9 @@ public class FilmExtractor implements ResultSetExtractor<Map<Film, List<Genre>>>
             }
             if (genre != null) {
                 film.addGenre(genre);
+            }
+            if (director != null) {
+                film.addDirector(director);
             }
         }
         return data;
