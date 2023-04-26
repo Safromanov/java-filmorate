@@ -77,7 +77,7 @@ public class UserDbStorage implements UserStorage {
 
             Map<String, Object> paramsFriends = new HashMap<>();
             paramsFriends.put("user_id",id);
-            SqlRowSet rsMap = jdbcTemplate.queryForRowSet(sqlFriends, paramsFriends );
+            SqlRowSet rsMap = jdbcTemplate.queryForRowSet(sqlFriends, paramsFriends);
             while (rsMap.next()) {
                 map.put(rsMap.getLong("FRIEND_ID"), rsMap.getBoolean("IS_CONFIRM"));
             }
