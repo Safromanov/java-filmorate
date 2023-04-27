@@ -11,11 +11,14 @@ import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
-public class FilmExtractor implements ResultSetExtractor<Map<Film, List<Genre>>> {
+public class FilmExtractor implements ResultSetExtractor<Set<Film>> {
 
     private final RowMapper<Film> filmMapper;
     private final RowMapper<Genre> genreMapper;
@@ -23,9 +26,9 @@ public class FilmExtractor implements ResultSetExtractor<Map<Film, List<Genre>>>
 
 
     @Override
-    public Map<Film, List<Genre>> extractData(ResultSet rs) throws SQLException, DataAccessException {
+    public Set<Film> extractData(ResultSet rs) throws SQLException, DataAccessException {
 
-        Map<Film, List<Genre>> data = new LinkedHashMap<>();
+        Set<Film> data = new LinkedHashSet<>();
         Map<Long, Film> mapId = new HashMap<>();
         Film film;
         while (rs.next()) {
@@ -37,7 +40,7 @@ public class FilmExtractor implements ResultSetExtractor<Map<Film, List<Genre>>>
                 film = mapId.get(filmId);
             else {
                 film = filmMapper.mapRow(rs, 1);
-                data.put(film, new ArrayList<>());
+                data.add(film);
                 mapId.put(film.getId(), film);
             }
             if (genre != null) {

@@ -13,7 +13,6 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -24,7 +23,7 @@ import java.util.stream.Collectors;
 public class FilmDbStorage implements FilmStorage {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
-    private final ResultSetExtractor<Map<Film, List<Genre>>> filmExtractor;
+    private final ResultSetExtractor<Set<Film>> filmExtractor;
 
     private final RowMapper<Director> dirMapper;
 
@@ -35,8 +34,7 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN genre g ON gf.genre_id = g.genre_id " +
                 "LEFT JOIN director_films df ON f.film_id = df.film_id \n" +
                 "LEFT JOIN directors d ON df.director_id = d.director_id ;";
-        var mapGenre = jdbcTemplate.query(sqlGetAllFilms, filmExtractor);
-        return mapGenre.keySet();
+        return jdbcTemplate.query(sqlGetAllFilms, filmExtractor);
     }
 
     @Override
@@ -90,10 +88,10 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN directors d ON df.director_id = d.director_id \n" +
                 "WHERE f.film_id = :film_id ;";
         var params = Collections.singletonMap("film_id", id);
-        var film = jdbcTemplate.query(sqlGetFilm, params, filmExtractor).keySet().stream().findAny();
+        var film = jdbcTemplate.query(sqlGetFilm, params, filmExtractor).stream().findAny();
         if (film.isPresent())
             return film.get();
-        else throw new ValidationException("Неверный id");
+        throw new ValidationException("Неверный id");
     }
 
     @Override
@@ -129,7 +127,7 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN director_films df ON f.film_id = df.film_id \n" +
                 "LEFT JOIN directors d ON df.director_id = d.director_id \n;";
         var param = Collections.singletonMap("size", size);
-        var listPopular = jdbcTemplate.query(sqlGetPopularFilms, param, filmExtractor).keySet();
+        var listPopular = jdbcTemplate.query(sqlGetPopularFilms, param, filmExtractor);
         if (listPopular.isEmpty())
             listPopular = findAll().stream().limit(size).collect(Collectors.toSet());
         return listPopular;
@@ -168,9 +166,8 @@ public class FilmDbStorage implements FilmStorage {
         if (jdbcTemplate.query(sqlCheckDir, param, dirMapper).size() == 0)
             throw new ValidationException("Режиссера не существует");
 
-        if (Objects.equals(sortBy, "year")) return jdbcTemplate.query(sqlYearSort, param, filmExtractor).keySet();
-        if (Objects.equals(sortBy, "likes")) return jdbcTemplate.query(sqlLikesSort, param, filmExtractor).keySet();
-
+        if (Objects.equals(sortBy, "year")) return jdbcTemplate.query(sqlYearSort, param, filmExtractor);
+        if (Objects.equals(sortBy, "likes")) return jdbcTemplate.query(sqlLikesSort, param, filmExtractor);
 
         throw new ValidationException("Неподдерживаемый параметр сортировки");
     }
