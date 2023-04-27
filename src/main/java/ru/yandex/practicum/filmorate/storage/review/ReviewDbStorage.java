@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.review;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -51,11 +52,8 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public void deleteReview(long reviewId) {
-        String sql = "DELETE FROM LIKES_REVIEW " +
-                "WHERE REVIEW_ID IN ( " +
-                "SELECT REVIEW_ID FROM REVIEWS WHERE REVIEW_ID = ?);\n" +
-                "DELETE FROM REVIEWS WHERE REVIEW_ID = ?";
-        jdbcTemplate.update(sql, reviewId, reviewId);
+        String sql = "DELETE FROM REVIEWS WHERE REVIEW_ID IN (SELECT REVIEW_ID FROM REVIEWS WHERE REVIEW_ID = ?)";
+        jdbcTemplate.update(sql, reviewId);
     }
 
     @Override
@@ -100,23 +98,23 @@ public class ReviewDbStorage implements ReviewStorage {
     @Override
     public void removeDislike(long reviewId, long userId) {
         idValidation(reviewId, userId);
-        String sql = "DELETE FROM likes_review WHERE review_id = ? AND user_id = ?";
+        String sql = "DELETE FROM LIKES_REVIEW WHERE REVIEW_ID = ? AND USER_ID = ?";
         jdbcTemplate.update(sql, reviewId, userId);
         updateReviewLikes(reviewId);
     }
 
     private void updateReviewLikes(long reviewId) {
+        var namedJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
         String sql = "UPDATE REVIEWS SET USEFUL = ( " +
-                "SELECT COUNT(CASE WHEN IS_POSITIVE THEN 1 END) - " +
-                "       COUNT(CASE WHEN NOT IS_POSITIVE THEN 1 END) " +
+                "SELECT SUM(CASE WHEN is_positive THEN 1 ELSE -1 END) " +
                 "FROM LIKES_REVIEW " +
-                "WHERE REVIEW_ID = ?)" +
-                "WHERE REVIEW_ID = ?";
-        jdbcTemplate.update(sql, reviewId, reviewId);
+                "WHERE REVIEW_ID = :review_id) " +
+                "WHERE REVIEW_ID = :review_id";
+        namedJdbcTemplate.update(sql, Collections.singletonMap("review_id", reviewId));
     }
 
     public Review getReview(long reviewId) {
-        String sql = "SELECT * FROM reviews WHERE review_id = ?";
+        String sql = "SELECT * FROM REVIEWS WHERE REVIEW_ID = ?";
         List<Review> film = jdbcTemplate.query(sql, (rs, rowNum) -> makeReview(rs), reviewId);
         if (!film.isEmpty()) {
             return film.get(0);
