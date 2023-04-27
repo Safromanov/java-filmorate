@@ -18,6 +18,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("checkstyle:Regexp")
 @Primary
 @Repository
 @RequiredArgsConstructor
@@ -116,22 +117,47 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Set<Film> getPopularFilm(int size) {
-        String sqlGetPopularFilms = "\nSELECT * \n" +
-                "FROM \n" +
-                "(SELECT film_id FROM likes_film \n" +
+    public Set<Film> getPopularFilm(int size,Integer genreId,Integer year) {
+        String sqlFilm1 = "SELECT * FROM (\n" +
+                "SELECT * FROM (" +
+                "SELECT *\n" +
+                "FROM FILMS  AS f\n" +
+                "WHERE \n" +
+                " f.FILM_ID IN\n" +
+                "(SELECT lf.film_id FROM likes_film AS lf\n";
+        String years = "WHERE EXTRACT(YEAR FROM cast(f.RELEASE_DATE AS date)) IN (:year)\n";
+        String sqlFilm2 =
                 "GROUP BY film_id \n" +
-                "ORDER BY COUNT(user_id) DESC \n" +
+                "ORDER BY COUNT(user_id) DESC \n)) \n" +
                 "LIMIT :size) popular_film \n" +
-                "LEFT JOIN films f ON f.film_id = popular_film.film_id \n" +
+                "LEFT JOIN  films f ON f.film_id = popular_film.film_id \n" +
                 "LEFT JOIN genre_films gf ON f.film_id = gf.film_id \n" +
                 "LEFT JOIN genre g ON gf.genre_id = g.genre_id \n" +
                 "LEFT JOIN director_films df ON f.film_id = df.film_id \n" +
-                "LEFT JOIN directors d ON df.director_id = d.director_id \n;";
-        var param = Collections.singletonMap("size", size);
+                "LEFT JOIN directors d ON df.director_id = d.director_id\n";
+        String genres = "WHERE f.FILM_ID IN (\n" +
+                "\tSELECT gf.FILM_ID\n" +
+                "\tFROM GENRE_FILMS gf\n" +
+                "\tWHERE  gf.GENRE_ID = :genreId)\n";
+
+        String sqlGetPopularFilms = sqlFilm1;
+
+        if (year != -1) {
+                sqlGetPopularFilms += years;
+        }
+            sqlGetPopularFilms += sqlFilm2;
+
+        if (genreId != -1) {
+            sqlGetPopularFilms += genres;
+        }
+
+       // var param = Collections.singletonMap("size", size);
+        var param = Map.of("size", size, "genreId", genreId, "year", year);
+
         var listPopular = jdbcTemplate.query(sqlGetPopularFilms, param, filmExtractor).keySet();
-        if (listPopular.isEmpty())
+        if (listPopular.isEmpty()) {
             listPopular = findAll().stream().limit(size).collect(Collectors.toSet());
+        }
         return listPopular;
     }
 
@@ -174,5 +200,4 @@ public class FilmDbStorage implements FilmStorage {
 
         throw new ValidationException("Неподдерживаемый параметр сортировки");
     }
-
 }

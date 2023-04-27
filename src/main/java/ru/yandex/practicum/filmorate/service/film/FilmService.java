@@ -15,7 +15,7 @@ public interface FilmService {
 
     Film getFilm(long id);
 
-    Set<Film> getPopularFilm(int size);
+    Set<Film> getPopularFilm(int size,Integer genreId,Integer year);
 
     void likeFilm(long filmId, long userId);
 
