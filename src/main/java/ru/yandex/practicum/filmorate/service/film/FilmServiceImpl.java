@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.film.GenreDb.GenreDB;
+import ru.yandex.practicum.filmorate.storage.film.directorDb.DirectorDb;
 
 import java.util.Collection;
 import java.util.Set;
@@ -18,6 +19,8 @@ public class FilmServiceImpl implements FilmService {
 
     private final GenreDB genreDB;
 
+    private final DirectorDb directorDb;
+
 
     public void likeFilm(long filmId, long userId) {
         filmStorage.addLike(filmId, userId);
@@ -25,6 +28,11 @@ public class FilmServiceImpl implements FilmService {
 
     public void removeLike(long filmId, long userId) {
         filmStorage.removeLike(userId, filmId);
+    }
+
+    @Override
+    public Collection<Film> getSortFilmsByDirector(long id, String sortBy) {
+        return filmStorage.getSortFilmsByDirector(id, sortBy);
     }
 
     @Override
@@ -38,6 +46,8 @@ public class FilmServiceImpl implements FilmService {
 
         film.setGenres(genreDB.addGenresToFilm(film.getId(), film.getGenres()));
 
+        film.setDirectors(directorDb.addDirectorToFilm(film.getId(), film.getDirectors()));
+
         return film;
     }
 
@@ -46,6 +56,8 @@ public class FilmServiceImpl implements FilmService {
         filmStorage.update(film);
 
         film.setGenres(genreDB.updateGenresFilm(film.getId(), film.getGenres()));
+
+        film.setDirectors(directorDb.updateDirectorFilm(film.getId(), film.getDirectors()));
 
         return film;
     }

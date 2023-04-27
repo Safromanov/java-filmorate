@@ -23,20 +23,6 @@ public class FriendshipDb implements FriendsStorage {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
-  /*  @Override
-    public void friend(long id1, long id2) {
-//        Integer[] friendshipStatus = getFriendshipStatus(id1, id2);
-//        if (friendshipStatus[0] == 1)
-//            throw new ValidationException("Пользователь уже добавлен в друзья");
-        String sql = "INSERT INTO friendship (user_id,  friend_id) VALUES (:user_id, :friend_id);";
-        var params = createParam(id1, id2);
-        try {
-            jdbcTemplate.update(sql, params);
-        } catch (RuntimeException e) {
-            throw new ValidationException("Неверный id");
-        }
-    }*/
-
     @Override
     public void friend(long id1, long id2) {
         try {

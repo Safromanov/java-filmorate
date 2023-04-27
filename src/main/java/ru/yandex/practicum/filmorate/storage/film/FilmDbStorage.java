@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.film;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -10,6 +11,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 
@@ -24,11 +26,15 @@ public class FilmDbStorage implements FilmStorage {
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final ResultSetExtractor<Map<Film, List<Genre>>> filmExtractor;
 
+    private final RowMapper<Director> dirMapper;
+
     @Override
     public Collection<Film> findAll() {
         String sqlGetAllFilms = "SELECT * FROM films f \n" +
                 "LEFT JOIN genre_films gf ON f.film_id = gf.film_id \n" +
-                "LEFT JOIN genre g ON gf.genre_id = g.genre_id";
+                "LEFT JOIN genre g ON gf.genre_id = g.genre_id " +
+                "LEFT JOIN director_films df ON f.film_id = df.film_id \n" +
+                "LEFT JOIN directors d ON df.director_id = d.director_id ;";
         var mapGenre = jdbcTemplate.query(sqlGetAllFilms, filmExtractor);
         return mapGenre.keySet();
     }
@@ -80,7 +86,9 @@ public class FilmDbStorage implements FilmStorage {
         String sqlGetFilm = "SELECT * FROM films f \n" +
                 "LEFT JOIN genre_films gf ON f.film_id = gf.film_id \n" +
                 "LEFT JOIN genre g ON gf.genre_id = g.genre_id \n" +
-                "WHERE f.film_id = :film_id";
+                "LEFT JOIN director_films df ON f.film_id = df.film_id \n" +
+                "LEFT JOIN directors d ON df.director_id = d.director_id \n" +
+                "WHERE f.film_id = :film_id ;";
         var params = Collections.singletonMap("film_id", id);
         var film = jdbcTemplate.query(sqlGetFilm, params, filmExtractor).keySet().stream().findAny();
         if (film.isPresent())
@@ -113,18 +121,58 @@ public class FilmDbStorage implements FilmStorage {
                 "FROM \n" +
                 "(SELECT film_id FROM likes_film \n" +
                 "GROUP BY film_id \n" +
-                "ORDER by COUNT(user_id) DESC \n" +
+                "ORDER BY COUNT(user_id) DESC \n" +
                 "LIMIT :size) popular_film \n" +
                 "LEFT JOIN films f ON f.film_id = popular_film.film_id \n" +
                 "LEFT JOIN genre_films gf ON f.film_id = gf.film_id \n" +
-                "LEFT JOIN genre g ON gf.genre_id = g.genre_id";
-
+                "LEFT JOIN genre g ON gf.genre_id = g.genre_id \n" +
+                "LEFT JOIN director_films df ON f.film_id = df.film_id \n" +
+                "LEFT JOIN directors d ON df.director_id = d.director_id \n;";
         var param = Collections.singletonMap("size", size);
-        var mapGenre = jdbcTemplate.query(sqlGetPopularFilms, param, filmExtractor);
-        var listPopular = mapGenre.keySet();
+        var listPopular = jdbcTemplate.query(sqlGetPopularFilms, param, filmExtractor).keySet();
         if (listPopular.isEmpty())
             listPopular = findAll().stream().limit(size).collect(Collectors.toSet());
         return listPopular;
+    }
+
+    public Collection<Film> getSortFilmsByDirector(long id, String sortBy) {
+
+        String sqlCheckDir = "SELECT * FROM directors WHERE director_id = :director_id";
+
+
+        String sqlYearSort = "\nSELECT * \n" +
+                "FROM \n" +
+                "(SELECT film_id, director_id FROM director_films\n" +
+                "WHERE director_id =  :director_id" +
+                ") film_by_director\n" +
+                "LEFT JOIN films f ON f.film_id = film_by_director.film_id \n" +
+                "LEFT JOIN genre_films gf ON f.film_id = gf.film_id \n" +
+                "LEFT JOIN genre g ON gf.genre_id = g.genre_id \n" +
+                "LEFT JOIN directors d ON film_by_director.director_id = d.director_id\n" +
+                "ORDER BY YEAR(f.release_date);";
+
+        String sqlLikesSort = "\n" +
+                "SELECT * FROM " +
+                " director_films df\n" +
+                "LEFT JOIN films f ON f.film_id = df.film_id \n" +
+                "LEFT JOIN genre_films gf ON f.film_id = gf.film_id \n" +
+                "LEFT JOIN genre g ON gf.genre_id = g.genre_id \n" +
+                "LEFT JOIN directors d ON df.director_id = d.director_id\n" +
+                "LEFT JOIN likes_film lf ON f.film_id = lf.film_id\n" +
+                "WHERE df.director_id =  :director_id\n" +
+                "group by df.film_id\n" +
+                "ORDER BY COUNT(lf.USER_ID);\n";
+
+        var param = Collections.singletonMap("director_id", id);
+
+        if (jdbcTemplate.query(sqlCheckDir, param, dirMapper).size() == 0)
+            throw new ValidationException("Режиссера не существует");
+
+        if (Objects.equals(sortBy, "year")) return jdbcTemplate.query(sqlYearSort, param, filmExtractor).keySet();
+        if (Objects.equals(sortBy, "likes")) return jdbcTemplate.query(sqlLikesSort, param, filmExtractor).keySet();
+
+
+        throw new ValidationException("Неподдерживаемый параметр сортировки");
     }
 
 }
