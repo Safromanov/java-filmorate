@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -34,41 +35,30 @@ public class GenreDBImpl implements GenreDB {
         return jdbcTemplate.query(sql, genreMapper);
     }
 
-    public List<Genre> findGenresFilm(long filmId) {
+    public Set<Genre> findGenresFilm(long filmId) {
         String sql = "SELECT * FROM GENRE_FILMS gf INNER JOIN genre g ON g.genre_id = gf.genre_id  " +
                 "WHERE film_id = :film_id";
         Map<String, Object> params = Collections.singletonMap("film_id", filmId);
-        return jdbcTemplate.query(sql, params, genreMapper);
+        return jdbcTemplate.queryForStream(sql, params, genreMapper)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    public List<Genre> addGenresToFilm(long filmId, List<Genre> genres) {
-        if (genres == null) return new ArrayList<>();
+    public Set<Genre> addGenresToFilm(long filmId, Set<Genre> genres) {
+        if (genres == null) return new HashSet<>();
         var countGenres = genres.size();
-        String sqlGenreInfo = "MERGE INTO genre_films(film_id, genre_id) VALUES (:film_id, :genre_id);";
+        String sqlGenreInfo = "INSERT INTO genre_films(film_id, genre_id) VALUES (:film_id, :genre_id);";
         SqlParameterSource[] sources = new SqlParameterSource[countGenres];
-        for (int i = 0; i < countGenres; i++) {
+        for (var genre : genres) {
             Map<String, Number> params = new HashMap<>();
             params.put("film_id", filmId);
-            params.put("genre_id", genres.get(i).getId());
-            sources[i] = new MapSqlParameterSource(params);
+            params.put("genre_id", genre.getId());
+            sources[--countGenres] = new MapSqlParameterSource(params);
         }
         jdbcTemplate.batchUpdate(sqlGenreInfo, sources);
         return findGenresFilm(filmId);
-//  Альтернативный вариант без batchUpdate
-//        String sqlGenreInfo = "MERGE INTO genre_films(film_id, genre_id) VALUES (:film_id, :genre_id);";
-//        Map<String, Object> params = new HashMap<>();
-//        params.put("film_id", filmId);
-//
-//        if (genres != null)
-//            for (var genre : genres) {
-//                params.put("genre_id", genre.getId());
-//                jdbcTemplate.update(sqlGenreInfo, params);
-//            }
-//        return findGenresFilm(filmId);
-
     }
 
-    public List<Genre> updateGenresFilm(long filmId, List<Genre> genres) {
+    public Set<Genre> updateGenresFilm(long filmId, Set<Genre> genres) {
         String sql = "DELETE FROM GENRE_FILMS WHERE film_id = :film_id;";
         Map<String, Object> params = Collections.singletonMap("film_id", filmId);
         jdbcTemplate.update(sql, params);

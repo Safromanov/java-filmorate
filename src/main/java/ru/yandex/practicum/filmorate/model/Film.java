@@ -13,6 +13,7 @@ import javax.validation.constraints.Size;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 
 @Data
@@ -31,7 +32,7 @@ public class Film {
 
     private MPA mpa;
     private List<Director> directors;
-    private List<Genre> genres;
+    private Set<Genre> genres;
     @NotNull
     @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT)
     @FilmDuration

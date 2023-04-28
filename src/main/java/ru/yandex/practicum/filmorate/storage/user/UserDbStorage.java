@@ -59,33 +59,27 @@ public class UserDbStorage implements UserStorage {
         SqlParameterSource paramSource = new MapSqlParameterSource(params);
         if (jdbcTemplate.update(sql, paramSource) == 0)
             throw new ValidationException("Пользователя не существует");
-       return user;
+        return user;
     }
 
     @Override
     public Optional<User> getUser(long id) {
         String sql = "select * from Users where user_id = :user_id;";
+        String sqlGetFriends = "SELECT FRIEND_ID, IS_CONFIRM " +
+                "FROM FRIENDSHIP \n " +
+                "WHERE USER_ID = :user_id";
         Map<String, Object> params = Collections.singletonMap("user_id", id);
         try {
             User user = jdbcTemplate.queryForObject(sql, params, userMapper);
-
-            String sqlFriends = "SELECT USER_ID,IS_CONFIRM " +
-                    "\tFROM FRIENDSHIP \n" +
-                    "\tWHERE USER_ID = :user_id";
-
             HashMap<Long, Boolean> map = new HashMap<>();
-
-            Map<String, Object> paramsFriends = new HashMap<>();
-            paramsFriends.put("user_id",id);
-            SqlRowSet rsMap = jdbcTemplate.queryForRowSet(sqlFriends, paramsFriends);
+            SqlRowSet rsMap = jdbcTemplate.queryForRowSet(sqlGetFriends, params);
             while (rsMap.next()) {
                 map.put(rsMap.getLong("FRIEND_ID"), rsMap.getBoolean("IS_CONFIRM"));
             }
             user.setFriends(map);
-
             return Optional.ofNullable(user);
-        } catch (Exception e) {
-            throw new ValidationException(e.getLocalizedMessage());
+        } catch (RuntimeException e) {
+            throw new ValidationException("getUser");
         }
     }
 
