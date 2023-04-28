@@ -56,6 +56,7 @@ public class FilmController {
 
     @GetMapping("director/{id}")
     public Collection<Film> getSortFilmsByDirector(@PathVariable long id, @RequestParam String sortBy) {
+        System.out.println("FE" + id);
         return filmService.getSortFilmsByDirector(id, sortBy);
     }
 

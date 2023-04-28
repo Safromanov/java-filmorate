@@ -31,7 +31,7 @@ public class Film {
     private LocalDate releaseDate;
 
     private MPA mpa;
-    private List<Director> directors;
+    private Set<Director> directors;
     private Set<Genre> genres;
     @NotNull
     @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT)
