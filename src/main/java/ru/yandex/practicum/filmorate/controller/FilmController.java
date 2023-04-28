@@ -10,6 +10,7 @@ import javax.validation.Valid;
 import java.util.Collection;
 import java.util.Set;
 
+@SuppressWarnings("checkstyle:Regexp")
 @Slf4j
 @RestController
 @RequestMapping("/films")
@@ -48,11 +49,6 @@ public class FilmController {
     public void dislikeFilm(@PathVariable long id, @PathVariable long userId) {
         filmService.removeLike(id, userId);
     }
-
- /*   @GetMapping("popular")
-    public Set<Film> getPopularFilms(@RequestParam(value = "count", defaultValue = "10", required = false) Integer count) {
-        return filmService.getPopularFilm(count);
-    }*/
 
     @GetMapping("popular")
     public Set<Film> getPopularFilms(

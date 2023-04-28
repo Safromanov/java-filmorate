@@ -119,24 +119,24 @@ public class FilmDbStorage implements FilmStorage {
     public Set<Film> getPopularFilm(int size,Integer genreId,Integer year) {
         String sqlFilm1 = "SELECT *\n" +
                 "FROM (\n" +
-                "SELECT *\n" +
-                "FROM FILMS f\n";
+                "SELECT f.film_id\n" +
+                "FROM FILMS f\t\n" +
+                "LEFT JOIN LIKES_FILM lf ON f.film_id = lf.film_id \n";
         String years = "\tEXTRACT(YEAR FROM cast(f.RELEASE_DATE AS date)) IN (:year)\n";
         String genres = "\tf.FILM_ID IN (\n" +
                 "\tSELECT gf.FILM_ID\n" +
                 "\tFROM GENRE_FILMS gf\n" +
                 "\tWHERE  gf.GENRE_ID = :genreId)\n";
         String sqlFilm2 =
-                ") popular_film\n" +
-                        "\n" +
+                "GROUP BY f.film_id\n" +
+                "ORDER BY COUNT(lf.user_id) DESC, f.film_id\n" +
+                        "LIMIT  :size \n" +
+                        ") popular_film\n" +
                         "LEFT JOIN films f ON f.film_id = popular_film.film_id\n" +
                         "LEFT JOIN genre_films gf ON f.film_id = gf.film_id\n" +
                         "LEFT JOIN genre g ON gf.genre_id = g.genre_id\n" +
                         "LEFT JOIN director_films df ON f.film_id = df.film_id\n" +
-                        "LEFT JOIN directors d ON df.director_id = d.director_id\n" +
-                        "LEFT JOIN LIKES_FILM lf ON f.film_id = lf.film_id\n" +
-                        "GROUP BY f.film_id, gf.genre_id \n" +
-                        "ORDER BY COUNT(lf.user_id) DESC, f.film_id, gf.genre_id ";
+                        "LEFT JOIN directors d ON df.director_id = d.director_id \n";
 
         String sqlGetPopularFilms = sqlFilm1;
         if (year != -1 || genreId != -1) {
@@ -151,26 +151,10 @@ public class FilmDbStorage implements FilmStorage {
         }
 
         sqlGetPopularFilms += sqlFilm2;
-
-       // var param = Collections.singletonMap("size", size);
         var param = Map.of("size", size, "genreId", genreId, "year", year);
-
         var listPopular = jdbcTemplate.query(sqlGetPopularFilms, param, filmExtractor).keySet();
         if (listPopular.isEmpty()) {
-/*            if (year != -1) {
-                listPopular = findAll().stream().limit(size)
-                        .filter(s -> s.getReleaseDate().getYear() == year)
-                        .collect(Collectors.toSet());
-            }
-            if (genreId != -1) {
-                listPopular = findAll().stream().limit(size)
-                        .filter(s -> s.getGenres().stream().anyMatch(f -> f.getId() == genreId))
-                        .collect(Collectors.toSet());
-            }*/
-       //     if (year != -1 && genreId != -1) {
-               // listPopular = findAll().stream().limit(size).collect(Collectors.toSet());
             listPopular = new HashSet<>();
-        //    }
         }
         return listPopular;
     }
