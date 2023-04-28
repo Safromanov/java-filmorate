@@ -115,6 +115,15 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public Collection<Film> createCollectionFilmsById(Collection<Long> filmsId) {
+        Collection<Film> films = new ArrayList<>();
+        for (Long id : filmsId) {
+            films.add(getFilm(id));
+        }
+        return films;
+    }
+
+    @Override
     public Set<Film> getPopularFilm(int size,Integer genreId,Integer year) {
         String sqlFilm1 = "SELECT *\n" +
                 "FROM (\n" +

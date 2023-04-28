@@ -16,6 +16,8 @@ public interface FilmStorage extends BaseStorage<Film> {
 
     void removeLike(long userId, long filmId);
 
+    Collection<Film> createCollectionFilmsById(Collection<Long> filmRecommendations);
+
     Collection<Film> getSortFilmsByDirector(long id, String sortBy);
 
 }
