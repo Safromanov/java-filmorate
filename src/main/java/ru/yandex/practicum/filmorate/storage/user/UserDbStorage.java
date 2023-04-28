@@ -83,4 +83,37 @@ public class UserDbStorage implements UserStorage {
         return null;
     }
 
+    @Override
+    public Collection<Long> getFilmRecommendationsId(long id) {
+        getUser(id);
+        Collection<User> users = findAll();
+        if (findAll().isEmpty()) return null;
+        Collection<Long> likedFilms = getLikedFilmsLikeId(id);
+        HashMap<Long, Integer> sameLikes = new HashMap<>();
+        for (User user: users)
+            for (long filmId: getLikedFilmsLikeId(user.getId())) {
+                if (likedFilms.contains(filmId) && user.getId() != id) {
+                    sameLikes.put(user.getId(), 1 + Optional.ofNullable(sameLikes.get(user.getId())).orElse(0));
+                }
+            }
+        int maxSameLikes = sameLikes.values().stream().max(Comparator.comparing(Integer::intValue)).orElse(0);
+        Set<Long> filmsId = new TreeSet<>();
+        for (Long otherId : sameLikes.keySet()) {
+            if (sameLikes.get(otherId) == maxSameLikes) {
+                for (long idFilm : getLikedFilmsLikeId(otherId)) {
+                    if (!likedFilms.contains(idFilm))
+                        filmsId.add(idFilm);
+                }
+            }
+        }
+        return filmsId;
+    }
+
+    private Collection<Long> getLikedFilmsLikeId(long id) {
+        String sqlQuery =
+                "SELECT film_id " +
+                        "FROM likes_film " +
+                        "WHERE user_id = ? ";
+        return jdbcTemplate.getJdbcTemplate().query(sqlQuery, (rs, rowNum) -> rs.getLong("film_id"), id);
+    }
 }

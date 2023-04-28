@@ -65,4 +65,8 @@ public class InMemoryFilmStorage implements FilmStorage {
         throw new NotYetImplementedException();
     }
 
+    @Override
+    public Collection<Film> createCollectionFilmsById(Collection<Long> filmRecommendations) {
+        return null;
+    }
 }
