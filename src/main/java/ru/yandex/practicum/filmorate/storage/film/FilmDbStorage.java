@@ -115,6 +115,15 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public Collection<Film> createCollectionFilmsById(Collection<Long> filmsId) {
+        Collection<Film> films = new ArrayList<>();
+        for (Long id : filmsId) {
+            films.add(getFilm(id));
+        }
+        return films;
+    }
+
+    @Override
     public void deleteFilm(long filmId) {
         getFilm(filmId);
         jdbcTemplate.getJdbcTemplate().update("DELETE FROM likes_film WHERE film_id = ?", filmId);

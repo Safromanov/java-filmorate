@@ -2,10 +2,12 @@ package ru.yandex.practicum.filmorate.service.user;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.OperationType;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.event.EventStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import ru.yandex.practicum.filmorate.storage.user.friends.FriendsStorage;
@@ -19,6 +21,8 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
 
     private final UserStorage userStorage;
+
+    private final FilmStorage filmStorage;
 
     private final FriendsStorage friendsStorage;
 
@@ -34,6 +38,10 @@ public class UserServiceImpl implements UserService {
     public void unfriend(long id1, long id2) {
         friendsStorage.unfriend(id1, id2);
         eventStorage.addToEventFeed(id1, id2, EventType.FRIEND, OperationType.REMOVE);
+    }
+
+    public Collection<Film> getFilmRecommendations(long id) {
+        return filmStorage.createCollectionFilmsById(userStorage.getFilmRecommendationsId(id));
     }
 
     @Override
