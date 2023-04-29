@@ -51,7 +51,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Set<Film> getPopularFilm(int size) {
+    public Set<Film> getPopularFilm(int size,Integer genreId,Integer year) {
         throw new NotYetImplementedException();
     }
 
