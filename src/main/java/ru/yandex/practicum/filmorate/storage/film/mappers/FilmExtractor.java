@@ -27,7 +27,6 @@ public class FilmExtractor implements ResultSetExtractor<Set<Film>> {
 
     @Override
     public Set<Film> extractData(ResultSet rs) throws SQLException, DataAccessException {
-
         Set<Film> data = new LinkedHashSet<>();
         Map<Long, Film> mapId = new HashMap<>();
         Film film;
@@ -35,7 +34,6 @@ public class FilmExtractor implements ResultSetExtractor<Set<Film>> {
             var genre = genreMapper.mapRow(rs, 1);
             var director = directorMapper.mapRow(rs, 1);
             var filmId = rs.getLong("film_id");
-
             if (mapId.containsKey(filmId))
                 film = mapId.get(filmId);
             else {
