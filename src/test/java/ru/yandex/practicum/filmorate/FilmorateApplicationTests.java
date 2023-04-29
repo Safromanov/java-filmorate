@@ -15,8 +15,9 @@ import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -30,8 +31,8 @@ class FilmorateApplicationTests {
     private final FilmDbStorage filmDb;
     User user1, user2;
     Film rambo, nemo;
-    ArrayList<Genre> genresNemo;
-    ArrayList<Genre> genresRambo;
+    Set<Genre> genresNemo;
+    Set<Genre> genresRambo;
 
     @BeforeEach
     public void beforeEach() {
@@ -49,9 +50,9 @@ class FilmorateApplicationTests {
                 .build();
         userDB.add(user1);
         userDB.add(user2);
-        genresRambo = new ArrayList<Genre>();
+        genresRambo = new HashSet<Genre>();
         genresRambo.add(Genre.builder().id(1).build());
-        genresNemo = new ArrayList<Genre>();
+        genresNemo = new HashSet<Genre>();
         genresNemo.add(Genre.builder().id(3).name("Мультфильм").build());
         genresNemo.add(Genre.builder().id(2).name("Драма").build());
         rambo = Film.builder().mpa(MPA.NC17).name("Rambo")
