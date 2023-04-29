@@ -2,7 +2,10 @@ package ru.yandex.practicum.filmorate.service.review;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.OperationType;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.storage.event.EventStorage;
 import ru.yandex.practicum.filmorate.storage.review.ReviewStorage;
 
 import java.util.Collection;
@@ -11,6 +14,7 @@ import java.util.Collection;
 @AllArgsConstructor
 public class ReviewService {
     private final ReviewStorage reviewStorage;
+    private final EventStorage eventStorage;
 
     public Collection<Review> findAll() {
         return reviewStorage.findAll();
@@ -21,15 +25,24 @@ public class ReviewService {
     }
 
     public Review create(Review review) {
-        return reviewStorage.add(review);
+        Review rev = reviewStorage.add(review);
+        eventStorage.addToEventFeed(rev.getUserId(), rev.getId(),
+                EventType.REVIEW, OperationType.ADD);
+        return rev;
     }
 
     public Review update(Review review) {
-        return reviewStorage.update(review);
+        Review rev = reviewStorage.update(review);
+        eventStorage.addToEventFeed(rev.getUserId(), rev.getId(),
+                EventType.REVIEW, OperationType.UPDATE);
+        return rev;
     }
 
     public void deleteReview(long reviewId) {
+        long userId = getReview(reviewId).getUserId();
         reviewStorage.deleteReview(reviewId);
+        eventStorage.addToEventFeed(userId, reviewId,
+                EventType.REVIEW, OperationType.REMOVE);
     }
 
     public Collection<Review> findFilmReviews(long filmId, int count) {
