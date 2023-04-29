@@ -41,15 +41,11 @@ public class Film {
     private List<Long> idUsersWhoLike;
 
     public void addGenre(Genre genre) {
-        if (!genres.contains(genre)) {
             genres.add(genre);
-        }
     }
 
     public void addDirector(Director director) {
-        if (!directors.contains(director)) {
             directors.add(director);
-        }
     }
 
 }
