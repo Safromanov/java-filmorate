@@ -65,6 +65,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getFriends(long id) {
+        userStorage.getUser(id);
         return friendsStorage.getFriends(id);
     }
 

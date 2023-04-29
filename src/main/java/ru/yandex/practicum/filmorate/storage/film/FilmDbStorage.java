@@ -119,7 +119,7 @@ public class FilmDbStorage implements FilmStorage {
         getFilm(filmId);
         jdbcTemplate.getJdbcTemplate().update("DELETE FROM likes_film WHERE film_id = ?", filmId);
         jdbcTemplate.getJdbcTemplate().update("DELETE FROM genre_films WHERE film_id = ?", filmId);
-        jdbcTemplate.getJdbcTemplate().update("DELETE FROM REVIEWS WHERE film_id = ?", filmId);
+        jdbcTemplate.getJdbcTemplate().update("DELETE FROM reviews WHERE film_id = ?", filmId);
         jdbcTemplate.getJdbcTemplate().update("DELETE FROM films WHERE film_id = ?", filmId);
 
     }
