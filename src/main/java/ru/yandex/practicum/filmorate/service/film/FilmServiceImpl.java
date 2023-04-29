@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.storage.film.GenreDb.GenreDB;
 import ru.yandex.practicum.filmorate.storage.film.directorDb.DirectorDb;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -72,4 +73,8 @@ public class FilmServiceImpl implements FilmService {
         return filmStorage.getPopularFilm(size);
     }
 
+    @Override
+    public Set<Film> searchFilms(Map<String, String> searchMap) {
+            return filmStorage.searchFilms(searchMap);
+    }
 }

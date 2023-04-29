@@ -175,4 +175,44 @@ public class FilmDbStorage implements FilmStorage {
         throw new ValidationException("Неподдерживаемый параметр сортировки");
     }
 
+    @Override
+    public Set<Film> searchFilms(Map<String, String> searchMap) {
+        StringBuilder sqlQuery = new StringBuilder();
+        sqlQuery.append("SELECT *\n" +
+                "FROM (\n" +
+                "SELECT f.film_id\n" +
+                "FROM FILMS f\t\n" +
+                "LEFT JOIN LIKES_FILM lf ON f.film_id = lf.film_id \n");
+        if (searchMap.containsKey("title") || searchMap.containsKey("director")) {
+            sqlQuery.append("WHERE f.film_id IN (\n");
+            sqlQuery.append(searchMap.containsKey("title")
+                    ? "SELECT film_id\n" +
+                    "FROM FILMS\n" +
+                    "WHERE LOWER(film_name) LIKE :stringSearch\n"
+                    + (searchMap.containsKey("director") ? "UNION\n" : "")
+                    : "");
+            sqlQuery.append(searchMap.containsKey("director")
+                    ? "SELECT f.film_id\n" + "" +
+                    "FROM FILMS f\n" +
+                    "INNER JOIN director_films df ON f.film_id = df.film_id\n" +
+                    "INNER JOIN directors d ON df.director_id = d.director_id\n" +
+                    "WHERE LOWER(d.director_name) LIKE :stringSearch\n "
+                    : "");
+            sqlQuery.append(")\n");
+        }
+        sqlQuery.append("GROUP BY f.film_id\n" +
+                "ORDER BY COUNT(lf.user_id) DESC, f.film_id\n" +
+                ") search_film\n" +
+                "LEFT JOIN films f ON f.film_id = search_film.film_id\n" +
+                "LEFT JOIN genre_films gf ON f.film_id = gf.film_id\n" +
+                "LEFT JOIN genre g ON gf.genre_id = g.genre_id\n" +
+                "LEFT JOIN director_films df ON f.film_id = df.film_id\n" +
+                "LEFT JOIN directors d ON df.director_id = d.director_id \n");
+        var param = Map.of("stringSearch", searchMap.values().stream().findAny().orElse(""));
+        var listSearch = jdbcTemplate.query(sqlQuery.toString(), param, filmExtractor).keySet();
+        if (listSearch.isEmpty()) {
+            listSearch = new HashSet<>();
+        }
+        return listSearch;
+    }
 }

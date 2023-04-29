@@ -7,8 +7,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
 
 import javax.validation.Valid;
-import java.util.Collection;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @RestController
@@ -59,4 +58,22 @@ public class FilmController {
         return filmService.getSortFilmsByDirector(id, sortBy);
     }
 
+    @GetMapping("/search")
+    public Set<Film> searchFilms(
+            @RequestParam(value = "query", defaultValue = "", required = false) String query,
+            @RequestParam(value = "by", required = false) List<String> by) {
+        Map<String, String> searchMap = new HashMap<>();
+        if (query == null || query.isBlank()) {
+            return filmService.searchFilms(searchMap);
+        }
+        if (by != null) {
+            by.stream()
+                    .filter(s -> s != null && !s.isBlank())
+                    .map(s -> s.toLowerCase().trim())
+                    .filter(s -> "director".equals(s) || "title".equals(s))
+                    .distinct()
+                    .forEach(s -> searchMap.put(s, query));
+        }
+        return filmService.searchFilms(searchMap);
+    }
 }

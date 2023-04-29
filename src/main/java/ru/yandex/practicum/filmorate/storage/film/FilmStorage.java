@@ -4,6 +4,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.BaseStorage;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 public interface FilmStorage extends BaseStorage<Film> {
@@ -18,4 +19,5 @@ public interface FilmStorage extends BaseStorage<Film> {
 
     Collection<Film> getSortFilmsByDirector(long id, String sortBy);
 
+    Set<Film> searchFilms(Map<String, String> searchMap);
 }
