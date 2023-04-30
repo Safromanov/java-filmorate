@@ -158,6 +158,11 @@ public class FilmDbStorage implements FilmStorage {
         return listPopular;
     }
 
+    @Override
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        return new ArrayList<>(); ///ЗДЕСЬ ПИСАТЬ!!
+    }
+
     public Collection<Film> getSortFilmsByDirector(long id, String sortBy) {
 
         String sqlCheckDir = "SELECT * FROM directors WHERE director_id = :director_id";
