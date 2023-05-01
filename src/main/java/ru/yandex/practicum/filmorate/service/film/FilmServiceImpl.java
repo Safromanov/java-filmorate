@@ -74,7 +74,7 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public Set<Film> searchFilms(Map<String, String> searchMap) {
+    public Collection<Film> searchFilms(Map<String, String> searchMap) {
             return filmStorage.searchFilms(searchMap);
     }
 }

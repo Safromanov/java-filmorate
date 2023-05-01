@@ -59,7 +59,7 @@ public class FilmController {
     }
 
     @GetMapping("/search")
-    public Set<Film> searchFilms(
+    public Collection<Film> searchFilms(
             @RequestParam(value = "query", defaultValue = "", required = false) String query,
             @RequestParam(value = "by", required = false) List<String> by) {
         Map<String, String> searchMap = new HashMap<>();

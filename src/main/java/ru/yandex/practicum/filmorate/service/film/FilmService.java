@@ -24,5 +24,5 @@ public interface FilmService {
 
     Collection<Film> getSortFilmsByDirector(long id, String count);
 
-    Set<Film> searchFilms(Map<String, String> searchMap);
+    Collection<Film> searchFilms(Map<String, String> searchMap);
 }

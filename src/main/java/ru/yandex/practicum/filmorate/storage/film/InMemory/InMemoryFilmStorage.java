@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.model.GeneratorId;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -71,7 +72,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Set<Film> searchFilms(Map<String, String> searchMap) {
-        return null;
+    public Collection<Film> searchFilms(Map<String, String> searchMap) {
+        return Collections.EMPTY_LIST;
     }
 }

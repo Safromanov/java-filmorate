@@ -176,7 +176,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Set<Film> searchFilms(Map<String, String> searchMap) {
+    public Collection<Film> searchFilms(Map<String, String> searchMap) {
         StringBuilder sqlQuery = new StringBuilder();
         sqlQuery.append("SELECT *\n" +
                 "FROM (\n" +
@@ -208,11 +208,9 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN genre g ON gf.genre_id = g.genre_id\n" +
                 "LEFT JOIN director_films df ON f.film_id = df.film_id\n" +
                 "LEFT JOIN directors d ON df.director_id = d.director_id \n");
-        var param = Map.of("stringSearch", searchMap.values().stream().findAny().orElse(""));
+        String stringSearch = searchMap.values().stream().findAny().orElse("").toLowerCase();
+        var param = Map.of("stringSearch", stringSearch.isBlank() ? "" : "%" + stringSearch + "%");
         var listSearch = jdbcTemplate.query(sqlQuery.toString(), param, filmExtractor).keySet();
-        if (listSearch.isEmpty()) {
-            listSearch = new HashSet<>();
-        }
-        return listSearch;
+        return new ArrayList<>(listSearch);
     }
 }
