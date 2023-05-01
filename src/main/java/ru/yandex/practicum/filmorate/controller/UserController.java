@@ -59,6 +59,11 @@ public class UserController {
         userService.unfriend(id, friendId);
     }
 
+    @DeleteMapping("{userId}")
+    public void deleteUser(@PathVariable long userId) {
+        userService.deleteUser(userId);
+    }
+
     @GetMapping("{userId}/feed")
     public List<Event> getEventFeed(@PathVariable long userId) {
         return userService.getEventFeed(userId);

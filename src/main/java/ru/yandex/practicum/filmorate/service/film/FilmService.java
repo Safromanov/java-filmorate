@@ -23,6 +23,8 @@ public interface FilmService {
 
     void removeLike(long filmId, long userId);
 
+    void deleteFilm(long filmId);
+
     Collection<Film> getSortFilmsByDirector(long id, String count);
 
     List<Film> getCommonFilms(Integer userId, Integer friendId);

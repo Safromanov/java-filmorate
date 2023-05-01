@@ -115,6 +115,16 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public void deleteFilm(long filmId) {
+        getFilm(filmId);
+        jdbcTemplate.getJdbcTemplate().update("DELETE FROM likes_film WHERE film_id = ?", filmId);
+        jdbcTemplate.getJdbcTemplate().update("DELETE FROM genre_films WHERE film_id = ?", filmId);
+        jdbcTemplate.getJdbcTemplate().update("DELETE FROM reviews WHERE film_id = ?", filmId);
+        jdbcTemplate.getJdbcTemplate().update("DELETE FROM films WHERE film_id = ?", filmId);
+
+    }
+
+    @Override
     public Set<Film> getPopularFilm(int size,Integer genreId,Integer year) {
         String sqlFilm1 = "SELECT *\n" +
                 "FROM (\n" +

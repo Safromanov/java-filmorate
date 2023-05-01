@@ -37,6 +37,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void deleteUser(long userId) {
+        userStorage.deleteUser(userId);
+    }
+
+    @Override
     public Collection<User> findAll() {
         return userStorage.findAll();
     }
@@ -60,6 +65,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getFriends(long id) {
+        userStorage.getUser(id);
         return friendsStorage.getFriends(id);
     }
 

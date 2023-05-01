@@ -27,7 +27,7 @@ public class FriendshipDb implements FriendsStorage {
     public void friend(long id1, long id2) {
         try {
             var friendsIdUserOne = getListFriends(id1);
-            var friendsIdUserTwo = getListFriends(id1);
+            var friendsIdUserTwo = getListFriends(id2);
 
             if (isNotEquals(id1, id2)) {
                 if (friendsIdUserOne.contains(id2)) {

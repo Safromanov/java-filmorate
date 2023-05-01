@@ -18,4 +18,5 @@ public interface UserService extends UserStorage {
 
     void unfriend(long id1, long id2);
 
+    void deleteUser(long userId);
 }
