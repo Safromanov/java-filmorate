@@ -65,7 +65,8 @@ public class DirectorDbImpl implements DirectorDb {
         String sql = "SELECT * FROM director_films df INNER JOIN directors d ON d.director_id = df.director_id  " +
                 "WHERE film_id = :film_id";
         Map<String, Object> params = Collections.singletonMap("film_id", filmId);
-        return jdbcTemplate.queryForStream(sql, params, directorMapper).collect(Collectors.toCollection(LinkedHashSet::new));
+        return jdbcTemplate.queryForStream(sql, params, directorMapper)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     @Override
