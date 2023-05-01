@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Repository
@@ -60,11 +61,11 @@ public class DirectorDbImpl implements DirectorDb {
     }
 
     @Override
-    public List<Director> findDirectorFilm(long filmId) {
+    public Set<Director> findDirectorFilm(long filmId) {
         String sql = "SELECT * FROM director_films df INNER JOIN directors d ON d.director_id = df.director_id  " +
                 "WHERE film_id = :film_id";
         Map<String, Object> params = Collections.singletonMap("film_id", filmId);
-        return jdbcTemplate.query(sql, params, directorMapper);
+        return jdbcTemplate.queryForStream(sql, params, directorMapper).collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     @Override
@@ -76,16 +77,16 @@ public class DirectorDbImpl implements DirectorDb {
     }
 
     @Override
-    public List<Director> addDirectorToFilm(long filmId, List<Director> directors) {
-        if (directors == null) return new ArrayList<>();
+    public Set<Director> addDirectorToFilm(long filmId, Set<Director> directors) {
+        if (directors == null) return new HashSet<>();
         var countDirectors = directors.size();
         String sqlGenreInfo = "MERGE INTO director_films(film_id, director_id) VALUES (:film_id, :director_id);";
         SqlParameterSource[] sources = new SqlParameterSource[countDirectors];
-        for (int i = 0; i < countDirectors; i++) {
+        for (var director : directors) {
             Map<String, Number> params = new HashMap<>();
             params.put("film_id", filmId);
-            params.put("director_id", directors.get(i).getId());
-            sources[i] = new MapSqlParameterSource(params);
+            params.put("director_id", director.getId());
+            sources[--countDirectors] = new MapSqlParameterSource(params);
         }
 
         try {
@@ -97,7 +98,7 @@ public class DirectorDbImpl implements DirectorDb {
     }
 
     @Override
-    public List<Director> updateDirectorFilm(long filmId, List<Director> genres) {
+    public Set<Director> updateDirectorFilm(long filmId, Set<Director> genres) {
         String sql = "DELETE FROM director_films WHERE film_id = :film_id;";
         Map<String, Object> params = Collections.singletonMap("film_id", filmId);
         jdbcTemplate.update(sql, params);
@@ -111,8 +112,7 @@ public class DirectorDbImpl implements DirectorDb {
         Map<String, Object> params = Collections.singletonMap("director_id", id);
         jdbcTemplate.update(sql, params);
         jdbcTemplate.update(sqlDelDirector, params);
-
-
         return null;
     }
+
 }
