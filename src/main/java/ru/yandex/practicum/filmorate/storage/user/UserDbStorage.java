@@ -50,7 +50,6 @@ public class UserDbStorage implements UserStorage {
     public List<User> getFriends(long id) {
         String sqlCheckUsr = "SELECT * FROM users WHERE user_id = :user_id";
 
-
         String sql = "\n SELECT U.USER_ID, U.EMAIL, U.LOGIN, U.USER_NAME, U.BIRTHDAY \n" +
                 "FROM FRIENDSHIP F \n" +
                 "LEFT JOIN USERS U ON F.FRIEND_ID = U.USER_ID \n" +
