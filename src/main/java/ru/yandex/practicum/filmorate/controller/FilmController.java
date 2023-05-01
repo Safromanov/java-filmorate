@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.service.film.FilmService;
 
 import javax.validation.Valid;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 @SuppressWarnings("checkstyle:Regexp")
@@ -50,6 +51,11 @@ public class FilmController {
         filmService.removeLike(id, userId);
     }
 
+    @DeleteMapping("{filmId}")
+    public void deleteFilm(@PathVariable long filmId) {
+        filmService.deleteFilm(filmId);
+    }
+
     @GetMapping("popular")
     public Set<Film> getPopularFilms(
             @RequestParam(value = "count", defaultValue = "10", required = false) Integer count,
@@ -62,6 +68,14 @@ public class FilmController {
     @GetMapping("director/{id}")
     public Collection<Film> getSortFilmsByDirector(@PathVariable long id, @RequestParam String sortBy) {
         return filmService.getSortFilmsByDirector(id, sortBy);
+    }
+
+    @GetMapping("common")
+    public List<Film> getCommonFilms(
+            @RequestParam(value = "userId") Integer userId,
+            @RequestParam(value = "friendId") Integer friendId
+            ) {
+        return filmService.getCommonFilms(userId,friendId);
     }
 
 }

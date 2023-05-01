@@ -4,6 +4,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.BaseStorage;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 public interface FilmStorage extends BaseStorage<Film> {
@@ -16,6 +17,9 @@ public interface FilmStorage extends BaseStorage<Film> {
 
     void removeLike(long userId, long filmId);
 
+    void deleteFilm(long filmid);
+
     Collection<Film> getSortFilmsByDirector(long id, String sortBy);
 
+    List<Film> getCommonFilms(Integer userId, Integer friendId);
 }

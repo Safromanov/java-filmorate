@@ -115,6 +115,16 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public void deleteFilm(long filmId) {
+        getFilm(filmId);
+        jdbcTemplate.getJdbcTemplate().update("DELETE FROM likes_film WHERE film_id = ?", filmId);
+        jdbcTemplate.getJdbcTemplate().update("DELETE FROM genre_films WHERE film_id = ?", filmId);
+        jdbcTemplate.getJdbcTemplate().update("DELETE FROM reviews WHERE film_id = ?", filmId);
+        jdbcTemplate.getJdbcTemplate().update("DELETE FROM films WHERE film_id = ?", filmId);
+
+    }
+
+    @Override
     public Set<Film> getPopularFilm(int size,Integer genreId,Integer year) {
         String sqlFilm1 = "SELECT *\n" +
                 "FROM (\n" +
@@ -156,6 +166,42 @@ public class FilmDbStorage implements FilmStorage {
             listPopular = new HashSet<>();
         }
         return listPopular;
+    }
+
+    @Override
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        String sqlGetCommonFilms =
+                "SELECT *\n" +
+                "FROM (\n" +
+                "SELECT commonFilms.*\n" +
+                "FROM (\n" +
+                "\tSELECT filmsUser.*\n" +
+                "\tFROM (\n" +
+                "\t\tSELECT f.* \n" +
+                "\t\tFROM FILMS f \n" +
+                "\t\tLEFT JOIN LIKES_FILM lf ON lf.FILM_ID= f.FILM_ID \n" +
+                "\t\tWHERE lf.USER_ID  = :userId \n" +
+                "\t) filmsUser\n" +
+                "\tLEFT JOIN LIKES_FILM lf ON lf.FILM_ID = filmsUser.FILM_ID\n" +
+                "\tWHERE lf.USER_ID = :friendId \n" +
+                "\t) commonFilms\n" +
+                "\tLEFT JOIN  LIKES_FILM lf ON lf.FILM_ID= commonFilms.FILM_ID \n" +
+                "\tGROUP BY commonFilms.film_id\n" +
+                "\tORDER BY COUNT(lf.USER_ID) DESC, commonFilms.film_id\n" +
+                ") popular_film\n" +
+                "\n" +
+                "LEFT JOIN films f ON f.film_id = popular_film.film_id\n" +
+                "LEFT JOIN genre_films gf ON f.film_id = gf.film_id\n" +
+                "LEFT JOIN genre g ON gf.genre_id = g.genre_id\n" +
+                "LEFT JOIN director_films df ON f.film_id = df.film_id\n" +
+                "LEFT JOIN directors d ON df.director_id = d.director_id ";
+
+        var param = Map.of("userId", userId, "friendId", friendId);
+        var listCommon = jdbcTemplate.query(sqlGetCommonFilms, param, filmExtractor);
+        if (listCommon.isEmpty()) {
+            listCommon = new HashSet<>();
+        }
+        return new ArrayList<>(listCommon);
     }
 
     public Collection<Film> getSortFilmsByDirector(long id, String sortBy) {
