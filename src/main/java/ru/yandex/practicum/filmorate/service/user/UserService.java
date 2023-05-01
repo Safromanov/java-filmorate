@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
+
     Collection<User> findAll();
 
     User add(User user);
@@ -27,5 +28,7 @@ public interface UserService {
     void unfriend(long id1, long id2);
 
     Collection<Film> getFilmRecommendations(long id);
+
     void deleteUser(long userId);
+
 }
