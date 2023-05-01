@@ -127,7 +127,6 @@ public class UserDbStorage implements UserStorage {
         return jdbcTemplate.getJdbcTemplate().query(sqlQuery, (rs, rowNum) -> rs.getLong("film_id"), id);
     }
 
-
     @Override
     public void deleteUser(long userId) {
         getUser(userId);
