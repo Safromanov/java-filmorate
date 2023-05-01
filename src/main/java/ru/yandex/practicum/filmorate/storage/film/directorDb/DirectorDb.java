@@ -20,5 +20,5 @@ public interface DirectorDb {
 
     Set<Director> updateDirectorFilm(long filmId, Set<Director> genres);
 
-    Void deleteDirector(long id);
+    void deleteDirector(long id);
 }

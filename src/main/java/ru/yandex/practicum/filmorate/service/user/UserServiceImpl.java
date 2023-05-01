@@ -66,13 +66,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getFriends(long id) {
-        userStorage.getUser(id);
-        return friendsStorage.getFriends(id);
+        return userStorage.getFriends(id);
     }
 
     @Override
     public List<User> getCommonFriends(long userId, long friendId) {
-        return friendsStorage.getCommonFriends(userId, friendId);
+        return userStorage.getCommonFriends(userId, friendId);
     }
 
     public List<Event> getEventFeed(long userId) {

@@ -106,12 +106,11 @@ public class DirectorDbImpl implements DirectorDb {
     }
 
     @Override
-    public Void deleteDirector(long id) {
+    public void deleteDirector(long id) {
         String sql = "DELETE FROM director_films WHERE director_id = :director_id;";
         String sqlDelDirector = "DELETE FROM directors WHERE director_id = :director_id;";
         Map<String, Object> params = Collections.singletonMap("director_id", id);
         jdbcTemplate.update(sql, params);
         jdbcTemplate.update(sqlDelDirector, params);
-        return null;
     }
 }
