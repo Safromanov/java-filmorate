@@ -100,8 +100,8 @@ public class UserDbStorage implements UserStorage {
         if (findAll().isEmpty()) return null;
         Collection<Long> likedFilms = getLikedFilmsLikeId(id);
         HashMap<Long, Integer> sameLikes = new HashMap<>();
-        for (User user: users)
-            for (long filmId: getLikedFilmsLikeId(user.getId())) {
+        for (User user : users)
+            for (long filmId : getLikedFilmsLikeId(user.getId())) {
                 if (likedFilms.contains(filmId) && user.getId() != id) {
                     sameLikes.put(user.getId(), 1 + Optional.ofNullable(sameLikes.get(user.getId())).orElse(0));
                 }
@@ -126,6 +126,7 @@ public class UserDbStorage implements UserStorage {
                         "WHERE user_id = ? ";
         return jdbcTemplate.getJdbcTemplate().query(sqlQuery, (rs, rowNum) -> rs.getLong("film_id"), id);
     }
+
     @Override
     public void deleteUser(long userId) {
         getUser(userId);
