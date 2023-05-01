@@ -38,10 +38,10 @@ public class FilmServiceImpl implements FilmService {
         eventStorage.addToEventFeed(userId, filmId, EventType.LIKE, OperationType.REMOVE);
     }
 
-//    @Override
-//    public void deleteFilm(long filmId) {
-//        filmStorage.deleteFilm(filmId);
-//    }
+    @Override
+    public void deleteFilm(long filmId) {
+        filmStorage.deleteFilm(filmId);
+    }
 
     @Override
     public Collection<Film> getSortFilmsByDirector(long id, String sortBy) {

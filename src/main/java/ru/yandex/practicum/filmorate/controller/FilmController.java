@@ -50,10 +50,10 @@ public class FilmController {
         filmService.removeLike(id, userId);
     }
 
-//    @DeleteMapping("{filmId}")
-//    public void deleteFilm(@PathVariable long filmId) {
-//        filmService.deleteFilm(filmId);
-//    }
+    @DeleteMapping("{filmId}")
+    public void deleteFilm(@PathVariable long filmId) {
+        filmService.deleteFilm(filmId);
+    }
 
     @GetMapping("popular")
     public Set<Film> getPopularFilms(
