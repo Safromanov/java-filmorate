@@ -10,10 +10,7 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.film.GenreDb.GenreDB;
 import ru.yandex.practicum.filmorate.storage.film.directorDb.DirectorDb;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -98,13 +95,12 @@ public class FilmServiceImpl implements FilmService {
                     .map(s -> s.toLowerCase().trim())
                     .filter(s -> "director".equals(s) || "title".equals(s))
                     .distinct()
-                    .forEach(s -> searchMap.put(s, query));
+                    .forEach(s -> searchMap.put(s, query.toLowerCase()));
         }
         return filmStorage.searchFilms(searchMap);
     }
 
-
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {
-        return filmStorage.getCommonFilms(userId,friendId);
+        return filmStorage.getCommonFilms(userId, friendId);
     }
 }

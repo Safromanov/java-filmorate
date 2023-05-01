@@ -24,5 +24,7 @@ public interface FilmService {
 
     Collection<Film> getSortFilmsByDirector(long id, String count);
 
+    Set<Film> getPopularFilm(int size, Integer genreId, Integer year);
+
     Collection<Film> searchFilms(String query, List<String> by);
 }
