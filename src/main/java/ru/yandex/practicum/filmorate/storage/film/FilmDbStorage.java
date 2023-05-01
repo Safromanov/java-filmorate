@@ -162,9 +162,25 @@ public class FilmDbStorage implements FilmStorage {
         String sqlCheckDir = "SELECT * FROM directors WHERE director_id = :director_id";
 
 
-        String sqlYearSort = "\nSELECT * \n" + "FROM \n" + "(SELECT film_id, director_id FROM director_films\n" + "WHERE director_id =  :director_id" + ") film_by_director\n" + "LEFT JOIN films f ON f.film_id = film_by_director.film_id \n" + "LEFT JOIN genre_films gf ON f.film_id = gf.film_id \n" + "LEFT JOIN genre g ON gf.genre_id = g.genre_id \n" + "LEFT JOIN directors d ON film_by_director.director_id = d.director_id\n" + "ORDER BY YEAR(f.release_date);";
+        String sqlYearSort = "\nSELECT * \n" +
+                "FROM \n"
+                + "(SELECT film_id, director_id FROM director_films\n"
+                + "WHERE director_id =  :director_id" + ") film_by_director\n"
+                + "LEFT JOIN films f ON f.film_id = film_by_director.film_id \n"
+                + "LEFT JOIN genre_films gf ON f.film_id = gf.film_id \n"
+                + "LEFT JOIN genre g ON gf.genre_id = g.genre_id \n"
+                + "LEFT JOIN directors d ON film_by_director.director_id = d.director_id\n"
+                + "ORDER BY YEAR(f.release_date);";
 
-        String sqlLikesSort = "\n" + "SELECT * FROM " + " director_films df\n" + "LEFT JOIN films f ON f.film_id = df.film_id \n" + "LEFT JOIN genre_films gf ON f.film_id = gf.film_id \n" + "LEFT JOIN genre g ON gf.genre_id = g.genre_id \n" + "LEFT JOIN directors d ON df.director_id = d.director_id\n" + "LEFT JOIN likes_film lf ON f.film_id = lf.film_id\n" + "WHERE df.director_id =  :director_id\n" + "group by df.film_id\n" + "ORDER BY COUNT(lf.USER_ID);\n";
+        String sqlLikesSort = "\n" + "SELECT * FROM "
+                + " director_films df\n" + "LEFT JOIN films f ON f.film_id = df.film_id \n"
+                + "LEFT JOIN genre_films gf ON f.film_id = gf.film_id \n"
+                + "LEFT JOIN genre g ON gf.genre_id = g.genre_id \n"
+                + "LEFT JOIN directors d ON df.director_id = d.director_id\n"
+                + "LEFT JOIN likes_film lf ON f.film_id = lf.film_id\n"
+                + "WHERE df.director_id =  :director_id\n"
+                + "group by df.film_id\n"
+                + "ORDER BY COUNT(lf.USER_ID);\n";
 
         var param = Collections.singletonMap("director_id", id);
 
@@ -176,4 +192,46 @@ public class FilmDbStorage implements FilmStorage {
 
         throw new ValidationException("Неподдерживаемый параметр сортировки");
     }
+
+
+    @Override
+    public Collection<Film> searchFilms(Map<String, String> searchMap) {
+        StringBuilder sqlQuery = new StringBuilder();
+        sqlQuery.append("SELECT *\n" +
+                "FROM (\n" +
+                "SELECT f.film_id\n" +
+                "FROM FILMS f\t\n" +
+                "LEFT JOIN LIKES_FILM lf ON f.film_id = lf.film_id \n");
+        if (searchMap.containsKey("title") || searchMap.containsKey("director")) {
+            sqlQuery.append("WHERE f.film_id IN (\n");
+            sqlQuery.append(searchMap.containsKey("title")
+                    ? "SELECT film_id\n" +
+                    "FROM FILMS\n" +
+                    "WHERE LOWER(film_name) LIKE :stringSearch\n"
+                    + (searchMap.containsKey("director") ? "UNION\n" : "")
+                    : "");
+            sqlQuery.append(searchMap.containsKey("director")
+                    ? "SELECT f.film_id\n" + "" +
+                    "FROM FILMS f\n" +
+                    "INNER JOIN director_films df ON f.film_id = df.film_id\n" +
+                    "INNER JOIN directors d ON df.director_id = d.director_id\n" +
+                    "WHERE LOWER(d.director_name) LIKE :stringSearch\n "
+                    : "");
+            sqlQuery.append(")\n");
+        }
+        sqlQuery.append("GROUP BY f.film_id\n" +
+                "ORDER BY COUNT(lf.user_id) DESC, f.film_id\n" +
+                ") search_film\n" +
+                "LEFT JOIN films f ON f.film_id = search_film.film_id\n" +
+                "LEFT JOIN genre_films gf ON f.film_id = gf.film_id\n" +
+                "LEFT JOIN genre g ON gf.genre_id = g.genre_id\n" +
+                "LEFT JOIN director_films df ON f.film_id = df.film_id\n" +
+                "LEFT JOIN directors d ON df.director_id = d.director_id \n");
+        String stringSearch = searchMap.values().stream().findAny().orElse("").toLowerCase();
+        var param = Map.of("stringSearch", stringSearch.isBlank() ? "" : "%" + stringSearch + "%");
+        var listSearch = jdbcTemplate.query(sqlQuery.toString(), param, filmExtractor);
+        return new ArrayList<>(listSearch);
+    }
 }
+
+
