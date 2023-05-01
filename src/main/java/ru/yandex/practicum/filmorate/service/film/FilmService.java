@@ -3,8 +3,10 @@ package ru.yandex.practicum.filmorate.service.film;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
+@SuppressWarnings("checkstyle:Regexp")
 public interface FilmService {
 
     Collection<Film> findAll();
@@ -22,4 +24,6 @@ public interface FilmService {
     void removeLike(long filmId, long userId);
 
     Collection<Film> getSortFilmsByDirector(long id, String count);
+
+    List<Film> getCommonFilms(Integer userId, Integer friendId);
 }

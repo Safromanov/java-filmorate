@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.service.film.FilmService;
 
 import javax.validation.Valid;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 @SuppressWarnings("checkstyle:Regexp")
@@ -62,6 +63,14 @@ public class FilmController {
     @GetMapping("director/{id}")
     public Collection<Film> getSortFilmsByDirector(@PathVariable long id, @RequestParam String sortBy) {
         return filmService.getSortFilmsByDirector(id, sortBy);
+    }
+
+    @GetMapping("common")
+    public List<Film> getCommonFilms(
+            @RequestParam(value = "userId") Integer userId,
+            @RequestParam(value = "friendId") Integer friendId
+            ) {
+        return filmService.getCommonFilms(userId,friendId);
     }
 
 }
