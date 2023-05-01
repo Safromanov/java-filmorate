@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.service.film;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
 
 public interface FilmService {
@@ -28,6 +28,5 @@ public interface FilmService {
 
     Set<Film> getPopularFilm(int size, Integer genreId, Integer year);
 
-    Collection<Film> searchFilms(Map<String, String> searchMap);
-
+    Collection<Film> searchFilms(String query, List<String> by);
 }
