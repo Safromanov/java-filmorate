@@ -9,8 +9,9 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.GeneratorId;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
-import java.util.Collection;
 import java.util.Collections;
+
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -52,7 +53,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Set<Film> getPopularFilm(int size) {
+    public Set<Film> getPopularFilm(int size,Integer genreId,Integer year) {
         throw new NotYetImplementedException();
     }
 
@@ -67,6 +68,17 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public Collection<Film> createCollectionFilmsById(Collection<Long> filmRecommendations) {
+        return null;
+    }
+
+    @Override
+    public void deleteFilm(long filmid) {
+        getFilm(filmid);
+        films.remove(filmid);
+    }
+
+    @Override
     public Collection<Film> getSortFilmsByDirector(long id, String sortBy) {
         return null;
     }
@@ -74,5 +86,9 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Collection<Film> searchFilms(Map<String, String> searchMap) {
         return Collections.EMPTY_LIST;
+    @Override
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        throw new NotYetImplementedException();
+
     }
 }

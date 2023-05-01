@@ -59,33 +59,27 @@ public class UserDbStorage implements UserStorage {
         SqlParameterSource paramSource = new MapSqlParameterSource(params);
         if (jdbcTemplate.update(sql, paramSource) == 0)
             throw new ValidationException("Пользователя не существует");
-       return user;
+        return user;
     }
 
     @Override
     public Optional<User> getUser(long id) {
         String sql = "select * from Users where user_id = :user_id;";
+        String sqlGetFriends = "SELECT FRIEND_ID, IS_CONFIRM " +
+                "FROM FRIENDSHIP \n " +
+                "WHERE USER_ID = :user_id";
         Map<String, Object> params = Collections.singletonMap("user_id", id);
         try {
             User user = jdbcTemplate.queryForObject(sql, params, userMapper);
-
-            String sqlFriends = "SELECT USER_ID,IS_CONFIRM " +
-                    "\tFROM FRIENDSHIP \n" +
-                    "\tWHERE USER_ID = :user_id";
-
             HashMap<Long, Boolean> map = new HashMap<>();
-
-            Map<String, Object> paramsFriends = new HashMap<>();
-            paramsFriends.put("user_id",id);
-            SqlRowSet rsMap = jdbcTemplate.queryForRowSet(sqlFriends, paramsFriends);
+            SqlRowSet rsMap = jdbcTemplate.queryForRowSet(sqlGetFriends, params);
             while (rsMap.next()) {
                 map.put(rsMap.getLong("FRIEND_ID"), rsMap.getBoolean("IS_CONFIRM"));
             }
             user.setFriends(map);
-
             return Optional.ofNullable(user);
-        } catch (Exception e) {
-            throw new ValidationException(e.getLocalizedMessage());
+        } catch (RuntimeException e) {
+            throw new ValidationException("getUser");
         }
     }
 
@@ -97,6 +91,52 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<User> getCommonFriends(long userId, long friendId) {
         return null;
+    }
+
+    @Override
+    public Collection<Long> getFilmRecommendationsId(long id) {
+        getUser(id);
+        Collection<User> users = findAll();
+        if (findAll().isEmpty()) return null;
+        Collection<Long> likedFilms = getLikedFilmsLikeId(id);
+        HashMap<Long, Integer> sameLikes = new HashMap<>();
+        for (User user : users)
+            for (long filmId : getLikedFilmsLikeId(user.getId())) {
+                if (likedFilms.contains(filmId) && user.getId() != id) {
+                    sameLikes.put(user.getId(), 1 + Optional.ofNullable(sameLikes.get(user.getId())).orElse(0));
+                }
+            }
+        int maxSameLikes = sameLikes.values().stream().max(Comparator.comparing(Integer::intValue)).orElse(0);
+        Set<Long> filmsId = new TreeSet<>();
+        for (Long otherId : sameLikes.keySet()) {
+            if (sameLikes.get(otherId) == maxSameLikes) {
+                for (long idFilm : getLikedFilmsLikeId(otherId)) {
+                    if (!likedFilms.contains(idFilm))
+                        filmsId.add(idFilm);
+                }
+            }
+        }
+        return filmsId;
+    }
+
+    private Collection<Long> getLikedFilmsLikeId(long id) {
+        String sqlQuery =
+                "SELECT film_id " +
+                        "FROM likes_film " +
+                        "WHERE user_id = ? ";
+        return jdbcTemplate.getJdbcTemplate().query(sqlQuery, (rs, rowNum) -> rs.getLong("film_id"), id);
+    }
+
+    @Override
+    public void deleteUser(long userId) {
+        getUser(userId);
+        jdbcTemplate.getJdbcTemplate().update("DELETE FROM likes_film WHERE user_id = ?", userId);
+        jdbcTemplate.getJdbcTemplate().update("DELETE FROM friendship WHERE user_id = ? " +
+                "OR friend_id = ?", userId, userId);
+        jdbcTemplate.getJdbcTemplate().update("DELETE FROM likes_review WHERE user_id = ?", userId);
+        jdbcTemplate.getJdbcTemplate().update("DELETE FROM reviews WHERE user_id = ?", userId);
+        jdbcTemplate.getJdbcTemplate().update("DELETE FROM event_feed WHERE user_id = ?", userId);
+        jdbcTemplate.getJdbcTemplate().update("DELETE FROM users WHERE user_id = ?", userId);
     }
 
 }

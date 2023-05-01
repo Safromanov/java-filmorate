@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.film.directorDb;
 import ru.yandex.practicum.filmorate.model.Director;
 
 import java.util.List;
+import java.util.Set;
 
 public interface DirectorDb {
     Director createDirector(Director director);
@@ -11,13 +12,13 @@ public interface DirectorDb {
 
     Director getDirector(long id);
 
-    List<Director> findDirectorFilm(long filmId);
+    Set<Director> findDirectorFilm(long filmId);
 
     List<Director> findAll();
 
-    List<Director> addDirectorToFilm(long filmId, List<Director> genres);
+    Set<Director> addDirectorToFilm(long filmId, Set<Director> genres);
 
-    List<Director> updateDirectorFilm(long filmId, List<Director> genres);
+    Set<Director> updateDirectorFilm(long filmId, Set<Director> genres);
 
     Void deleteDirector(long id);
 
