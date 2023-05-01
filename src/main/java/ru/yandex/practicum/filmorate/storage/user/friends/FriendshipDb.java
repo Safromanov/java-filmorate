@@ -13,14 +13,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 @Primary
 @Repository
 @RequiredArgsConstructor
 public class FriendshipDb implements FriendsStorage {
 
     private final RowMapper<User> userMapper;
-
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
     @Override
@@ -121,5 +119,4 @@ public class FriendshipDb implements FriendsStorage {
         }
         return true;
     }
-
 }

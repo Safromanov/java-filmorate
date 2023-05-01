@@ -24,7 +24,6 @@ public class User {
     @PastOrPresent
     @NotNull
     private LocalDate birthday;
-
     private Map<Long, Boolean> friends;
     @JsonIgnore
     private Set<Long> likedFilms;

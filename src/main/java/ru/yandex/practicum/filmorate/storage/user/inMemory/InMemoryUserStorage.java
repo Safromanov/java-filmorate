@@ -16,7 +16,6 @@ import java.util.*;
 public class InMemoryUserStorage implements UserStorage {
 
     private final Map<Long, User> users;
-
     private final GeneratorId generatorId;
 
 
@@ -26,7 +25,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public  Optional<User> getUser(long id) {
+    public Optional<User> getUser(long id) {
         var user = Optional.of(users.get(id));
         return user;
     }
@@ -84,5 +83,4 @@ public class InMemoryUserStorage implements UserStorage {
     private void changeEmptyUserName(User user) {
         if (user.getName() == null || user.getName().isBlank()) user.setName(user.getLogin());
     }
-
 }

@@ -28,5 +28,4 @@ public interface UserService {
     Collection<Film> getFilmRecommendations(long id);
 
     void deleteUser(long userId);
-
 }

@@ -16,8 +16,6 @@ public interface FilmService {
 
     Film getFilm(long id);
 
-    Set<Film> getPopularFilm(int size);
-
     void likeFilm(long filmId, long userId);
 
     void removeLike(long filmId, long userId);
@@ -29,4 +27,6 @@ public interface FilmService {
     Set<Film> getPopularFilm(int size, Integer genreId, Integer year);
 
     Collection<Film> searchFilms(String query, List<String> by);
+
+    List<Film> getCommonFilms(Integer userId, Integer friendId);
 }

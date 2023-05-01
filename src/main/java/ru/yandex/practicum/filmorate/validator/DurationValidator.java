@@ -11,5 +11,4 @@ class DurationValidator implements ConstraintValidator<FilmDuration, Duration> {
     public boolean isValid(Duration duration, ConstraintValidatorContext context) {
         return duration.getSeconds() >= 1;
     }
-
 }

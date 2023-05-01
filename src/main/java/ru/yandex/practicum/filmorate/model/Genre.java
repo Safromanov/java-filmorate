@@ -11,7 +11,6 @@ import lombok.Data;
 public class Genre {
 
     private final int id;
-
     private String name;
 
 }

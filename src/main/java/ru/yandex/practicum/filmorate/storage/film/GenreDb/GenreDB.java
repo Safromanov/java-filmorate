@@ -16,5 +16,4 @@ public interface GenreDB {
     Set<Genre> addGenresToFilm(long filmId, Set<Genre> genres);
 
     Set<Genre> updateGenresFilm(long filmId, Set<Genre> genres);
-
 }

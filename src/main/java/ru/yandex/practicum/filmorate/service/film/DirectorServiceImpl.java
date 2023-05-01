@@ -38,5 +38,4 @@ public class DirectorServiceImpl implements DirectorService {
     public Void deleteDirector(long id) {
         return directorDb.deleteDirector(id);
     }
-
 }

@@ -18,5 +18,4 @@ public interface UserStorage extends BaseStorage<User> {
     Collection<Long> getFilmRecommendationsId(long id);
 
     void deleteUser(long userId);
-
 }

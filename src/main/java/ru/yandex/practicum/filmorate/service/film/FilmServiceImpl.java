@@ -74,11 +74,6 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public Set<Film> getPopularFilm(int size) {
-        return null;
-    }
-
-    @Override
     public Set<Film> getPopularFilm(int size, Integer genreId, Integer year) {
         return filmStorage.getPopularFilm(size, genreId, year);
     }

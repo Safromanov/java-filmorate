@@ -114,5 +114,4 @@ public class DirectorDbImpl implements DirectorDb {
         jdbcTemplate.update(sqlDelDirector, params);
         return null;
     }
-
 }

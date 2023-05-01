@@ -14,6 +14,4 @@ public interface DirectorService {
     Director update(Director director);
 
     Void deleteDirector(long id);
-
-
 }

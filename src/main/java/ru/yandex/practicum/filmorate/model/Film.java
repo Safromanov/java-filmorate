@@ -41,12 +41,10 @@ public class Film {
     private List<Long> idUsersWhoLike;
 
     public void addGenre(Genre genre) {
-            genres.add(genre);
+        genres.add(genre);
     }
 
     public void addDirector(Director director) {
-            directors.add(director);
+        directors.add(director);
     }
-
 }
-

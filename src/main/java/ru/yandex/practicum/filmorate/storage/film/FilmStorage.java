@@ -12,7 +12,7 @@ public interface FilmStorage extends BaseStorage<Film> {
 
     Film getFilm(long id);
 
-    Set<Film> getPopularFilm(int size,Integer genreId,Integer year);
+    Set<Film> getPopularFilm(int size, Integer genreId, Integer year);
 
     void addLike(long userId, long filmId);
 
@@ -28,5 +28,4 @@ public interface FilmStorage extends BaseStorage<Film> {
     Collection<Film> searchFilms(Map<String, String> searchMap);
 
     List<Film> getCommonFilms(Integer userId, Integer friendId);
-
 }

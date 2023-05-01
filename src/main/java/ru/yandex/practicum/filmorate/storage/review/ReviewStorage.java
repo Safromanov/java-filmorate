@@ -6,8 +6,6 @@ import ru.yandex.practicum.filmorate.storage.BaseStorage;
 import java.util.Collection;
 
 public interface ReviewStorage extends BaseStorage<Review> {
-    //Пока не использую BaseStorage т.к по ТЗ не нужен findAll, смысл тогда его в коде. Обсудить.
-
     Review getReview(long reviewId);
 
     void deleteReview(long id);

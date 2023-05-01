@@ -23,5 +23,4 @@ public class GenreServiceImpl implements GenreService {
     public List<Genre> findAllGenres() {
         return genreDB.findAll();
     }
-
 }

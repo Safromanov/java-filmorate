@@ -8,5 +8,4 @@ public interface GenreService {
     Genre getGenre(int id);
 
     List<Genre> findAllGenres();
-
 }

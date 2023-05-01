@@ -64,6 +64,4 @@ public class GenreDBImpl implements GenreDB {
         jdbcTemplate.update(sql, params);
         return addGenresToFilm(filmId, genres);
     }
-
 }
-

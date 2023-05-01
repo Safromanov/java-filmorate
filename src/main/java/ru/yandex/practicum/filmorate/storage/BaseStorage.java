@@ -9,5 +9,4 @@ public interface BaseStorage<T> {
     T add(T t);
 
     T update(T t);
-
 }

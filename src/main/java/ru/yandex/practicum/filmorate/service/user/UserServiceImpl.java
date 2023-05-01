@@ -17,11 +17,8 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
 
     private final UserStorage userStorage;
-
     private final FilmStorage filmStorage;
-
     private final FriendsStorage friendsStorage;
-
     private final EventStorage eventStorage;
 
     @Override
