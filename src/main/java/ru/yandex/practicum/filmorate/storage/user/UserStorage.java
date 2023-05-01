@@ -16,5 +16,7 @@ public interface UserStorage extends BaseStorage<User> {
     List<User> getCommonFriends(long userId, long friendId);
 
     Collection<Long> getFilmRecommendationsId(long id);
+
     void deleteUser(long userId);
+
 }
