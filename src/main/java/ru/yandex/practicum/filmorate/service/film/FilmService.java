@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service.film;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -24,5 +25,5 @@ public interface FilmService {
 
     Collection<Film> getSortFilmsByDirector(long id, String count);
 
-    Collection<Film> searchFilms(Map<String, String> searchMap);
+    Collection<Film> searchFilms(String query, List<String> by);
 }
