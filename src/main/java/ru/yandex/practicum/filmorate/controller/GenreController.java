@@ -18,7 +18,7 @@ import java.util.Collection;
 @AllArgsConstructor
 public class GenreController {
 
-    GenreService genreService;
+    private final GenreService genreService;
 
     @GetMapping("{id}")
     public Genre getGenre(@PathVariable int id) {
