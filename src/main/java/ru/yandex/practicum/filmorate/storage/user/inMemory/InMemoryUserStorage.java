@@ -57,6 +57,11 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
+    public Collection<Long> getFilmRecommendationsId(long id) {
+        return null;
+    }
+
+    @Override
     public User add(User user) {
         changeEmptyUserName(user);
         user.setId(generatorId.getId());
