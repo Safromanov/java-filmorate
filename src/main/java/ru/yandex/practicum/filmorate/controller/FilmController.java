@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
 
 import javax.validation.Valid;
-
 import java.util.*;
 
 
@@ -51,18 +50,18 @@ public class FilmController {
         filmService.removeLike(id, userId);
     }
 
-    @DeleteMapping("{filmId}")
-    public void deleteFilm(@PathVariable long filmId) {
-        filmService.deleteFilm(filmId);
-    }
+//    @DeleteMapping("{filmId}")
+//    public void deleteFilm(@PathVariable long filmId) {
+//        filmService.deleteFilm(filmId);
+//    }
 
     @GetMapping("popular")
     public Set<Film> getPopularFilms(
             @RequestParam(value = "count", defaultValue = "10", required = false) Integer count,
-            @RequestParam(value = "genreId",defaultValue =  "-1", required = false) Integer genreId,
-            @RequestParam(value = "year", defaultValue =  "-1", required = false) Integer year
-            ) {
-        return filmService.getPopularFilm(count,genreId,year);
+            @RequestParam(value = "genreId", defaultValue = "-1", required = false) Integer genreId,
+            @RequestParam(value = "year", defaultValue = "-1", required = false) Integer year
+    ) {
+        return filmService.getPopularFilm(count, genreId, year);
     }
 
     @GetMapping("director/{id}")
@@ -90,12 +89,12 @@ public class FilmController {
         return filmService.searchFilms(searchMap);
     }
 
-    @GetMapping("common")
-    public List<Film> getCommonFilms(
-            @RequestParam(value = "userId") Integer userId,
-            @RequestParam(value = "friendId") Integer friendId
-            ) {
-        return filmService.getCommonFilms(userId,friendId);
-    }
+//    @GetMapping("common")
+//    public List<Film> getCommonFilms(
+//            @RequestParam(value = "userId") Integer userId,
+//            @RequestParam(value = "friendId") Integer friendId
+//            ) {
+//        return filmService.getCommonFilms(userId,friendId);
+//    }
 
 }

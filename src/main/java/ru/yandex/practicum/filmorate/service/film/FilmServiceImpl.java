@@ -11,8 +11,8 @@ import ru.yandex.practicum.filmorate.storage.film.GenreDb.GenreDB;
 import ru.yandex.practicum.filmorate.storage.film.directorDb.DirectorDb;
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -38,10 +38,10 @@ public class FilmServiceImpl implements FilmService {
         eventStorage.addToEventFeed(userId, filmId, EventType.LIKE, OperationType.REMOVE);
     }
 
-    @Override
-    public void deleteFilm(long filmId) {
-        filmStorage.deleteFilm(filmId);
-    }
+//    @Override
+//    public void deleteFilm(long filmId) {
+//        filmStorage.deleteFilm(filmId);
+//    }
 
     @Override
     public Collection<Film> getSortFilmsByDirector(long id, String sortBy) {
@@ -75,15 +75,20 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public Set<Film> getPopularFilm(int size,Integer genreId,Integer year) {
-        return filmStorage.getPopularFilm(size,genreId,year);
+    public Set<Film> getPopularFilm(int size) {
+        return null;
+    }
+
+    @Override
+    public Set<Film> getPopularFilm(int size, Integer genreId, Integer year) {
+        return filmStorage.getPopularFilm(size, genreId, year);
     }
 
     @Override
     public Collection<Film> searchFilms(Map<String, String> searchMap) {
-            return filmStorage.searchFilms(searchMap);
+        return filmStorage.searchFilms(searchMap);
     }
-}
+
 
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {
         return filmStorage.getCommonFilms(userId,friendId);
