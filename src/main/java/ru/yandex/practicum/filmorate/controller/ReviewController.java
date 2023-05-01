@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.service.review.ReviewService;
+import ru.yandex.practicum.filmorate.service.review.ReviewServiceImpl;
 
 import javax.validation.Valid;
 import java.util.Collection;
@@ -14,7 +14,7 @@ import java.util.Collection;
 @RequestMapping("/reviews")
 @RequiredArgsConstructor
 public class ReviewController {
-    private final ReviewService reviewService;
+    private final ReviewServiceImpl reviewService;
 
     @GetMapping
     public Collection<Review> findAll(@RequestParam(required = false) Long filmId,
