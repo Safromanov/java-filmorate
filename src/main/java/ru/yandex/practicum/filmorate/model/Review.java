@@ -20,5 +20,5 @@ public class Review {
     private Long userId;
     @NotNull(message = "id фильма должен быть задан")
     private Long filmId;
-    private Long useful; //кол-во лайков обзора
+    private Integer useful; //кол-во лайков обзора
 }

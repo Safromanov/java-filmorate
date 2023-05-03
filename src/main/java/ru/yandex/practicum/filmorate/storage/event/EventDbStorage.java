@@ -9,9 +9,8 @@ import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.OperationType;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +22,9 @@ public class EventDbStorage implements EventStorage {
 
     @Override
     public void addToEventFeed(long userId, long entityId, EventType eventType, OperationType operationType) {
+        if (checkUserExists(userId)) {
+            throw new ValidationException("Пользователя с id " + userId + " не существует");
+        }
         Event event = Event.builder()
                 .userId(userId)
                 .eventTime(Instant.now()).eventType(eventType)
@@ -42,17 +44,24 @@ public class EventDbStorage implements EventStorage {
             throw new ValidationException("Пользователя с id " + userId + " не существует");
         }
         String sql = "SELECT * FROM EVENT_FEED WHERE USER_ID = ?";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> makeEvent(rs), userId);
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, userId);
+        return mapRowsToEvents(rows);
     }
 
-    private Event makeEvent(ResultSet rs) throws SQLException {
-        return Event.builder()
-                .id(rs.getLong("EVENT_ID"))
-                .userId(rs.getLong("USER_ID"))
-                .eventTime(Instant.ofEpochMilli(rs.getLong("TIMESTAMP")))
-                .eventType(EventType.valueOf(rs.getString("EVENT_TYPE")))
-                .operationType(OperationType.valueOf(rs.getString("OPERATION_TYPE")))
-                .entityId(rs.getLong("ENTITY_ID")).build();
+    private List<Event> mapRowsToEvents(List<Map<String, Object>> rows) {
+        List<Event> events = new ArrayList<>();
+        for (Map<String, Object> row : rows) {
+            Event event = Event.builder()
+                    .id(((Integer) row.get("EVENT_ID")).longValue())
+                    .userId(((Integer) row.get("USER_ID")).longValue())
+                    .eventTime(Instant.ofEpochMilli((Long) row.get("TIMESTAMP")))
+                    .eventType(EventType.valueOf((String) row.get("EVENT_TYPE")))
+                    .operationType(OperationType.valueOf((String) row.get("OPERATION_TYPE")))
+                    .entityId(((Integer) row.get("ENTITY_ID")).longValue())
+                    .build();
+            events.add(event);
+        }
+        return events;
     }
 
     private Map<String, Object> eventToMap(Event event) {
@@ -67,7 +76,11 @@ public class EventDbStorage implements EventStorage {
 
     private boolean checkUserExists(long userId) {
         String sql = "SELECT COUNT(*) FROM USERS WHERE USER_ID = ?";
-        List<Long> result = jdbcTemplate.queryForList(sql, Long.class, userId);
-        return result.get(0) == 0;
+        Long result = jdbcTemplate.queryForObject(sql, Long.class, userId);
+        if (result != null) {
+            return result == 0;
+        } else {
+            return true;
+        }
     }
 }

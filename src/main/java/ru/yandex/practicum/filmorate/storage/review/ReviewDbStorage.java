@@ -131,7 +131,7 @@ public class ReviewDbStorage implements ReviewStorage {
                 .isPositive(rs.getBoolean("IS_POSITIVE"))
                 .userId(rs.getLong("USER_ID"))
                 .filmId(rs.getLong("FILM_ID"))
-                .useful(rs.getLong("USEFUL"))
+                .useful(rs.getInt("USEFUL"))
                 .build();
     }
 
