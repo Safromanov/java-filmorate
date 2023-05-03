@@ -65,7 +65,8 @@ public class DirectorDbImpl implements DirectorDb {
         String sql = "SELECT * FROM director_films df INNER JOIN directors d ON d.director_id = df.director_id  " +
                 "WHERE film_id = :film_id";
         Map<String, Object> params = Collections.singletonMap("film_id", filmId);
-        return jdbcTemplate.queryForStream(sql, params, directorMapper).collect(Collectors.toCollection(LinkedHashSet::new));
+        return jdbcTemplate.queryForStream(sql, params, directorMapper)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     @Override
@@ -106,12 +107,11 @@ public class DirectorDbImpl implements DirectorDb {
     }
 
     @Override
-    public Void deleteDirector(long id) {
+    public void deleteDirector(long id) {
         String sql = "DELETE FROM director_films WHERE director_id = :director_id;";
         String sqlDelDirector = "DELETE FROM directors WHERE director_id = :director_id;";
         Map<String, Object> params = Collections.singletonMap("director_id", id);
         jdbcTemplate.update(sql, params);
         jdbcTemplate.update(sqlDelDirector, params);
-        return null;
     }
 }

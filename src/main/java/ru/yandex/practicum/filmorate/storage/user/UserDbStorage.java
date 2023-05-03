@@ -47,6 +47,20 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
+    public List<User> getFriends(long id) {
+        String sqlCheckUsr = "SELECT * FROM users WHERE user_id = :user_id";
+
+        String sql = "\n SELECT U.USER_ID, U.EMAIL, U.LOGIN, U.USER_NAME, U.BIRTHDAY \n" +
+                "FROM FRIENDSHIP F \n" +
+                "LEFT JOIN USERS U ON F.FRIEND_ID = U.USER_ID \n" +
+                "WHERE f.USER_ID = :user_id; \n";
+        Map<String, Object> params = Collections.singletonMap("user_id", id);
+        if (jdbcTemplate.query(sqlCheckUsr, params, userMapper).size() == 0)
+            throw new ValidationException("Пользователя с таким id не существует");
+        return jdbcTemplate.query(sql, params, userMapper);
+    }
+
+    @Override
     public User update(User user) {
         String sql = "UPDATE users SET login = :login, user_name = :user_name, email = :email, birthday = :birthday " +
                 "WHERE user_id = :user_id";
@@ -65,32 +79,41 @@ public class UserDbStorage implements UserStorage {
     @Override
     public Optional<User> getUser(long id) {
         String sql = "select * from Users where user_id = :user_id;";
-        String sqlGetFriends = "SELECT FRIEND_ID, IS_CONFIRM " +
+        String sqlGetIdFriends = "SELECT FRIEND_ID, IS_CONFIRM " +
                 "FROM FRIENDSHIP \n " +
                 "WHERE USER_ID = :user_id";
-        Map<String, Object> params = Collections.singletonMap("user_id", id);
+        Map<String, Object> param = Collections.singletonMap("user_id", id);
         try {
-            User user = jdbcTemplate.queryForObject(sql, params, userMapper);
-            HashMap<Long, Boolean> map = new HashMap<>();
-            SqlRowSet rsMap = jdbcTemplate.queryForRowSet(sqlGetFriends, params);
+            User user = jdbcTemplate.queryForObject(sql, param, userMapper);
+            HashMap<Long, Boolean> relationshipMap = new HashMap<>();
+            SqlRowSet rsMap = jdbcTemplate.queryForRowSet(sqlGetIdFriends, param);
             while (rsMap.next()) {
-                map.put(rsMap.getLong("FRIEND_ID"), rsMap.getBoolean("IS_CONFIRM"));
+                relationshipMap.put(rsMap.getLong("FRIEND_ID"), rsMap.getBoolean("IS_CONFIRM"));
             }
-            user.setFriends(map);
+            user.setFriends(relationshipMap);
             return Optional.ofNullable(user);
         } catch (RuntimeException e) {
-            throw new ValidationException("getUser");
+            throw new ValidationException("Пользователя под таким id не существует");
         }
     }
 
     @Override
-    public List<User> getFriends(long id) {
-        return null;
-    }
-
-    @Override
     public List<User> getCommonFriends(long userId, long friendId) {
-        return null;
+        String sqlGetCommonFriends = " \n" +
+                "SELECT U.USER_ID, U.EMAIL, U.LOGIN, U.USER_NAME, U.BIRTHDAY \n" +
+                "FROM (\n" +
+                "SELECT b.friend_id  FROM ( \n" +
+                "\tSELECT f.FRIEND_ID\n" +
+                "\tFROM FRIENDSHIP F\n" +
+                "\tWHERE f.USER_ID = :user_id) a\n" +
+                "\tINNER JOIN ( \n" +
+                "\tSELECT f.FRIEND_ID\n" +
+                "\tFROM FRIENDSHIP F\n" +
+                "\tWHERE f.USER_ID = :friend_id ) b ON a.friend_id = b.friend_id\t\n" +
+                ")  common \n" +
+                "LEFT JOIN USERS U ON common.FRIEND_ID = U.USER_ID;";
+        var params = Map.of("user_id", userId, "friend_id", friendId);
+        return jdbcTemplate.query(sqlGetCommonFriends, params, userMapper);
     }
 
     @Override

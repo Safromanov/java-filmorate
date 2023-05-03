@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 @Repository
 @Slf4j
 public class ReviewDbStorage implements ReviewStorage {
+
     private final JdbcTemplate jdbcTemplate;
 
     @Override

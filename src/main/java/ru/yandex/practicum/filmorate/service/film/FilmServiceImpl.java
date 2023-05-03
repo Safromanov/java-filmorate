@@ -16,7 +16,6 @@ import java.util.*;
 @AllArgsConstructor
 public class FilmServiceImpl implements FilmService {
 
-
     private final FilmStorage filmStorage;
 
     private final GenreDB genreDB;

@@ -4,8 +4,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.BaseStorage;
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public interface FilmStorage extends BaseStorage<Film> {
@@ -20,7 +20,7 @@ public interface FilmStorage extends BaseStorage<Film> {
 
     Collection<Film> createCollectionFilmsById(Collection<Long> filmRecommendations);
 
-    void deleteFilm(long filmid);
+    void deleteFilm(long filmId);
 
     Collection<Film> getSortFilmsByDirector(long id, String sortBy);
 
