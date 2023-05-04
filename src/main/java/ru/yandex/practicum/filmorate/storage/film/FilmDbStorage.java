@@ -17,8 +17,6 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.film.mappers.FilmMapper;
 import ru.yandex.practicum.filmorate.storage.film.mappers.ValuesExtractor;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -29,7 +27,6 @@ import java.util.stream.Collectors;
 public class FilmDbStorage implements FilmStorage {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
-    private final ResultSetExtractor<Set<Film>> filmExtractor;
     private final FilmMapper filmMapper;
     private final RowMapper<Director> dirMapper;
     private final RowMapper<Genre> genreMapper;
@@ -340,7 +337,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> searchFilms(Map<String, String> searchMap) {
-        String sqlSearch ="SELECT f.film_id, COUNT(lf.user_id) AS likes_count\n" +
+        String sqlSearch = "SELECT f.film_id, COUNT(lf.user_id) AS likes_count\n" +
                 "FROM FILMS f\n" +
                 "LEFT JOIN LIKES_FILM lf ON f.film_id = lf.film_id\n" +
                 "LEFT JOIN director_films df ON f.film_id = df.film_id\n" +
