@@ -56,7 +56,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Collection<Long> getFilmRecommendationsId(long id) {
+    public List<Long> getRecommendedFilmsId(long id) {
         return null;
     }
 

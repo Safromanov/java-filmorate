@@ -25,7 +25,7 @@ public interface UserService {
 
     void unfriend(long id1, long id2);
 
-    Collection<Film> getFilmRecommendations(long id);
+    List<Film> getRecommendedFilms(long id);
 
     void deleteUser(long userId);
 }

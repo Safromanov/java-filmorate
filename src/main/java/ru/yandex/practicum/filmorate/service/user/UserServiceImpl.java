@@ -33,8 +33,8 @@ public class UserServiceImpl implements UserService {
         eventStorage.addToEventFeed(id1, id2, EventType.FRIEND, OperationType.REMOVE);
     }
 
-    public Collection<Film> getFilmRecommendations(long id) {
-        return filmStorage.createCollectionFilmsById(userStorage.getFilmRecommendationsId(id));
+    public List<Film> getRecommendedFilms(long id) {
+        return filmStorage.createListFilmsById(userStorage.getRecommendedFilmsId(id));
     }
 
     @Override

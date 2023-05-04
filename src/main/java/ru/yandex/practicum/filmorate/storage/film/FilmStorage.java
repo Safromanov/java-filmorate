@@ -18,7 +18,7 @@ public interface FilmStorage extends BaseStorage<Film> {
 
     void removeLike(long userId, long filmId);
 
-    Collection<Film> createCollectionFilmsById(Collection<Long> filmRecommendations);
+    List<Film> createListFilmsById(Collection<Long> filmRecommendations);
 
     void deleteFilm(long filmId);
 
