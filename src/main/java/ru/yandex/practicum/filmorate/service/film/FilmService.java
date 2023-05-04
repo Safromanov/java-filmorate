@@ -26,7 +26,7 @@ public interface FilmService {
 
     Set<Film> getPopularFilm(int size, Integer genreId, Integer year);
 
-    Collection<Film> searchFilms(String query, List<String> by);
+    List<Film> searchFilms(String query, List<String> by);
 
     List<Film> getCommonFilms(Integer userId, Integer friendId);
 }

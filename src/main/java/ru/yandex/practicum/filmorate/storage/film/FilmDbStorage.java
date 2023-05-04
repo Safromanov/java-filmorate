@@ -17,6 +17,8 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.film.mappers.FilmMapper;
 import ru.yandex.practicum.filmorate.storage.film.mappers.ValuesExtractor;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -162,6 +164,23 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Set<Film> getPopularFilm(int size, Integer genreId, Integer year) {
+
+        String sqlGetPopularFilms = "SELECT f.film_id, COUNT(lf.user_id) AS likes_count\n" +
+                "FROM FILMS f\n" +
+                "LEFT JOIN LIKES_FILM lf ON f.film_id = lf.film_id\n" +
+                "LEFT JOIN GENRE_FILMS gf ON f.film_id = gf.film_id\n" +
+                "LEFT JOIN DIRECTOR_FILMS df ON f.film_id = df.film_id\n" +
+                "WHERE (:year = -1 OR EXTRACT(YEAR FROM CAST(f.RELEASE_DATE AS DATE)) = :year)\n" +
+                "AND (:genreId = -1 OR gf.genre_id = :genreId)\n" +
+                "GROUP BY f.film_id\n" +
+                "ORDER BY likes_count DESC, f.film_id\n" +
+                "LIMIT :size";
+        var param = Map.of("size", size, "genreId", genreId, "year", year);
+        var listPopular = jdbcTemplate.query(sqlGetPopularFilms, param,
+                (rs,rowNum) -> getFilm(rs.getInt("FILM_ID")));
+        return listPopular.isEmpty() ? new HashSet<>() : new HashSet<>(listPopular);
+
+        /*
         String sqlFilm1 = "SELECT *\n"
                 + "FROM (\n"
                 + "SELECT f.film_id\n"
@@ -194,16 +213,35 @@ public class FilmDbStorage implements FilmStorage {
         }
 
         sqlGetPopularFilms += sqlFilm2;
-        var param = Map.of("size", size, "genreId", genreId, "year", year);
+                var param = Map.of("size", size, "genreId", genreId, "year", year);
         var listPopular = jdbcTemplate.query(sqlGetPopularFilms, param, filmExtractor);
         if (listPopular.isEmpty()) {
             listPopular = new HashSet<>();
         }
         return listPopular;
+        */
+
+
     }
 
     @Override
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+
+        String sqlGetCommonFilms = "SELECT f.FILM_ID, COUNT(lf.USER_ID) AS likes\n" +
+                "FROM FILMS f\n" +
+                "LEFT JOIN LIKES_FILM lf1 ON lf1.FILM_ID = f.FILM_ID  \n" +
+                "LEFT JOIN LIKES_FILM lf2 ON lf2.FILM_ID = f.FILM_ID\n" +
+                "LEFT JOIN LIKES_FILM lf ON lf.FILM_ID = f.FILM_ID  \n" +
+                "WHERE lf1.USER_ID  = :userId AND  lf2.USER_ID  = :friendId \n" +
+                "GROUP BY f.FILM_ID\n" +
+                "ORDER BY likes DESC";
+
+        var param = Map.of("userId", userId, "friendId", friendId);
+        var listPopular = jdbcTemplate.query(sqlGetCommonFilms, param,
+                (rs,rowNum) -> getFilm(rs.getInt("FILM_ID")));
+        return listPopular.isEmpty() ? new ArrayList<>() : listPopular;
+
+        /*
         String sqlGetCommonFilms = "SELECT *\n"
                 + "FROM (\n"
                 + "SELECT commonFilms.*\n"
@@ -233,6 +271,7 @@ public class FilmDbStorage implements FilmStorage {
             listCommon = new HashSet<>();
         }
         return new ArrayList<>(listCommon);
+        */
     }
 
     public List<Film> getSortFilmsByDirector(long id, String sortBy) {
@@ -300,8 +339,30 @@ public class FilmDbStorage implements FilmStorage {
 
 
     @Override
-    public Collection<Film> searchFilms(Map<String, String> searchMap) {
-        StringBuilder sqlQuery = new StringBuilder();
+    public List<Film> searchFilms(Map<String, String> searchMap) {
+        String sqlSearch ="SELECT f.film_id, COUNT(lf.user_id) AS likes_count\n" +
+                "FROM FILMS f\n" +
+                "LEFT JOIN LIKES_FILM lf ON f.film_id = lf.film_id\n" +
+                "LEFT JOIN director_films df ON f.film_id = df.film_id\n" +
+                "LEFT JOIN directors d ON df.director_id = d.director_id\n" +
+                "WHERE ( ( :by = 'title' OR :by = 'any') AND (:stringSearch ='' OR (LOWER(f.film_name) LIKE :stringSearch)))\n" +
+                "OR ( ( :by = 'director' OR :by = 'any') AND (LOWER(d.director_name) LIKE :stringSearch))\n" +
+                "GROUP BY f.film_id\n" +
+                "ORDER BY likes_count DESC, f.film_id";
+
+        String stringBy;
+        if (searchMap.containsKey("title") && searchMap.containsKey("director")) {
+            stringBy = "any";
+        } else {
+            stringBy = searchMap.keySet().stream().findAny().orElse("");
+        }
+        String stringSearch = searchMap.values().stream().findAny().orElse("").toLowerCase();
+        var param = Map.of("stringSearch", stringSearch.isBlank() ? "" : "%" + stringSearch + "%",
+                "by", stringBy.isBlank() ? "" : stringBy);
+        var listSearch = jdbcTemplate.query(sqlSearch, param, (rs,rowNum) -> getFilm(rs.getInt("FILM_ID")));
+        return listSearch.isEmpty() ? new ArrayList<>() : listSearch;
+
+    /*    StringBuilder sqlQuery = new StringBuilder();
         sqlQuery.append("SELECT *\n" +
                 "FROM (\n" +
                 "SELECT f.film_id\n" +
@@ -332,9 +393,10 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN genre g ON gf.genre_id = g.genre_id\n" +
                 "LEFT JOIN director_films df ON f.film_id = df.film_id\n" +
                 "LEFT JOIN directors d ON df.director_id = d.director_id \n");
+
         String stringSearch = searchMap.values().stream().findAny().orElse("").toLowerCase();
         var param = Map.of("stringSearch", stringSearch.isBlank() ? "" : "%" + stringSearch + "%");
         var listSearch = jdbcTemplate.query(sqlQuery.toString(), param, filmExtractor);
-        return new ArrayList<>(listSearch);
+        return new ArrayList<>(listSearch);*/
     }
 }

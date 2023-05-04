@@ -78,7 +78,7 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public Collection<Film> searchFilms(String query, List<String> by) {
+    public List<Film> searchFilms(String query, List<String> by) {
         Map<String, String> searchMap = new HashMap<>();
         if (query == null || query.isBlank()) {
             return filmStorage.searchFilms(searchMap);
