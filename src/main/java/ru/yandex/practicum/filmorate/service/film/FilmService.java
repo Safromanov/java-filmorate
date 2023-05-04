@@ -22,7 +22,7 @@ public interface FilmService {
 
     void deleteFilm(long filmId);
 
-    Collection<Film> getSortFilmsByDirector(long id, String count);
+    List<Film> getSortFilmsByDirector(long id, String count);
 
     Set<Film> getPopularFilm(int size, Integer genreId, Integer year);
 

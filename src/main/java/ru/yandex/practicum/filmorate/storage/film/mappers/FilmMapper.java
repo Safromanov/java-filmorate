@@ -9,7 +9,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 
 @Component
 public class FilmMapper implements RowMapper<Film> {
@@ -28,7 +27,7 @@ public class FilmMapper implements RowMapper<Film> {
                 .duration(Duration.ofSeconds(duration))
                 .mpa(MPA.findValue(mpaId))
                 .releaseDate(releaseDate)
-                .genres(new LinkedHashSet<>())
+                .genres(new HashSet<>())
                 .directors(new HashSet<>())
                 .build();
     }

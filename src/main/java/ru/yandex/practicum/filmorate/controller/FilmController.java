@@ -2,15 +2,17 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
 
 import javax.validation.Valid;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 
-@SuppressWarnings("checkstyle:Regexp")
 @Slf4j
 @RestController
 @RequestMapping("/films")
@@ -30,6 +32,7 @@ public class FilmController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public Film create(@Valid @RequestBody Film film) {
         return filmService.create(film);
     }
@@ -65,7 +68,7 @@ public class FilmController {
     }
 
     @GetMapping("director/{id}")
-    public Collection<Film> getSortFilmsByDirector(@PathVariable long id, @RequestParam String sortBy) {
+    public List<Film> getSortFilmsByDirector(@PathVariable long id, @RequestParam String sortBy) {
         return filmService.getSortFilmsByDirector(id, sortBy);
     }
 

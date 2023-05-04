@@ -22,7 +22,7 @@ public interface FilmStorage extends BaseStorage<Film> {
 
     void deleteFilm(long filmId);
 
-    Collection<Film> getSortFilmsByDirector(long id, String sortBy);
+    List<Film> getSortFilmsByDirector(long id, String sortBy);
 
 
     Collection<Film> searchFilms(Map<String, String> searchMap);

@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.service.film.DirectorService;
@@ -19,7 +20,7 @@ public class DirectorController {
     private final DirectorService directorService;
 
     @GetMapping
-    public Collection<Director> getAllGenres() {
+    public Collection<Director> getAllDirectors() {
         return directorService.findAllDirectors();
     }
 
@@ -29,6 +30,7 @@ public class DirectorController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public Director create(@Valid @RequestBody Director director) {
         return directorService.createDirector(director);
     }

@@ -13,10 +13,14 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.storage.film.mappers.FilmMapper;
+import ru.yandex.practicum.filmorate.storage.film.mappers.ValuesExtractor;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
-@SuppressWarnings("checkstyle:Regexp")
+
 @Primary
 @Repository
 @RequiredArgsConstructor
@@ -24,17 +28,20 @@ public class FilmDbStorage implements FilmStorage {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final ResultSetExtractor<Set<Film>> filmExtractor;
+    private final FilmMapper filmMapper;
     private final RowMapper<Director> dirMapper;
+    private final RowMapper<Genre> genreMapper;
 
     @Override
     public Collection<Film> findAll() {
-        String sqlGetAllFilms = "SELECT * FROM films f \n"
-                + "LEFT JOIN genre_films gf ON f.film_id = gf.film_id \n"
-                + "LEFT JOIN genre g ON gf.genre_id = g.genre_id "
-                + "LEFT JOIN director_films df ON f.film_id = df.film_id \n"
-                + "LEFT JOIN directors d ON df.director_id = d.director_id ;";
-        var mapGenre = jdbcTemplate.query(sqlGetAllFilms, filmExtractor);
-        return mapGenre;
+        String sqlGetAllFilms = "SELECT * FROM films f ORDER BY FILM_ID \n";
+        String sqlGetAllGenres = "SELECT * FROM genre_films gf \n"
+                + "LEFT JOIN genre g ON gf.genre_id = g.genre_id ";
+        String sqlGetAllDirectors = "SELECT * FROM director_films df \n"
+                + "LEFT JOIN directors d ON df.director_id = d.director_id ";
+        return getFilmsByParams(sqlGetAllFilms, sqlGetAllDirectors, sqlGetAllGenres, null);
+        //   var mapGenre = jdbcTemplate.query(sqlGetAllFilms, filmExtractor);
+        //  return mapGenre;
     }
 
     @Override
@@ -76,18 +83,45 @@ public class FilmDbStorage implements FilmStorage {
         return film;
     }
 
+//    @Override
+//    public Film getFilm(long id) {
+//        String sqlGetFilm = "SELECT * FROM films f \n"
+//                + "LEFT JOIN genre_films gf ON f.film_id = gf.film_id \n"
+//                + "LEFT JOIN genre g ON gf.genre_id = g.genre_id \n"
+//                + "LEFT JOIN director_films df ON f.film_id = df.film_id \n"
+//                + "LEFT JOIN directors d ON df.director_id = d.director_id \n"
+//                + "WHERE f.film_id = :film_id ;";
+//
+//        var params = Collections.singletonMap("film_id", id);
+//        var film = jdbcTemplate.query(sqlGetFilm, params, filmExtractor).stream().findAny();
+//        if (film.isPresent()) return film.get();
+//        else throw new ValidationException("Неверный id");
+//    }
+
     @Override
     public Film getFilm(long id) {
-        String sqlGetFilm = "SELECT * FROM films f \n"
-                + "LEFT JOIN genre_films gf ON f.film_id = gf.film_id \n"
-                + "LEFT JOIN genre g ON gf.genre_id = g.genre_id \n"
-                + "LEFT JOIN director_films df ON f.film_id = df.film_id \n"
-                + "LEFT JOIN directors d ON df.director_id = d.director_id \n"
-                + "WHERE f.film_id = :film_id ;";
+        String sqlGetFilm = "SELECT * FROM films f WHERE f.film_id = :film_id ;";
+
+        String sqlGetDir = "SELECT * FROM DIRECTOR_FILMS df " +
+                "LEFT JOIN  directors d on d.director_id = df.director_id " +
+                "WHERE df.film_id = :film_id ;";
+
+        String sqlGetGenre = "SELECT * FROM genre_films gf " +
+                "LEFT JOIN  genre g on g.genre_id = gf.genre_id " +
+                "WHERE gf.film_id = :film_id ;";
+
         var params = Collections.singletonMap("film_id", id);
-        var film = jdbcTemplate.query(sqlGetFilm, params, filmExtractor).stream().findAny();
-        if (film.isPresent()) return film.get();
-        else throw new ValidationException("Неверный id");
+        try {
+            var film = Optional.of(jdbcTemplate.queryForObject(sqlGetFilm, params, filmMapper));
+            var filmId = film.get().getId();
+            var dir = jdbcTemplate.query(sqlGetDir, params, new ValuesExtractor<>(dirMapper));
+            if (dir.get(filmId) != null) film.get().setDirectors(dir.get(film.get().getId()));
+            var gen = jdbcTemplate.query(sqlGetGenre, params, new ValuesExtractor<>(genreMapper));
+            if (gen.get(filmId) != null) film.get().setGenres(gen.get(film.get().getId()));
+            return film.get();
+        } catch (RuntimeException e) {
+            throw new ValidationException("Несуществующий id");
+        }
     }
 
     @Override
@@ -124,7 +158,6 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.getJdbcTemplate().update("DELETE FROM genre_films WHERE film_id = ?", filmId);
         jdbcTemplate.getJdbcTemplate().update("DELETE FROM reviews WHERE film_id = ?", filmId);
         jdbcTemplate.getJdbcTemplate().update("DELETE FROM films WHERE film_id = ?", filmId);
-
     }
 
     @Override
@@ -202,40 +235,67 @@ public class FilmDbStorage implements FilmStorage {
         return new ArrayList<>(listCommon);
     }
 
-    public Collection<Film> getSortFilmsByDirector(long id, String sortBy) {
+    public List<Film> getSortFilmsByDirector(long id, String sortBy) {
 
         String sqlCheckDir = "SELECT * FROM directors WHERE director_id = :director_id";
 
+        String filmByDirector = "(SELECT film_id, director_id FROM director_films\n"
+                + "WHERE director_id =  :director_id"
+                + ") film_by_director\n";
 
-        String sqlYearSort = "\nSELECT * \n" +
+        String sqlYearSortFilmsDir = "\nSELECT * \n" +
                 "FROM \n"
-                + "(SELECT film_id, director_id FROM director_films\n"
-                + "WHERE director_id =  :director_id" + ") film_by_director\n"
+                + filmByDirector
+                + "LEFT JOIN directors d ON film_by_director.director_id = d.director_id \n";
+
+        String sqlYearSortFilms = "\nSELECT * \n" +
+                "FROM \n"
+                + filmByDirector
                 + "LEFT JOIN films f ON f.film_id = film_by_director.film_id \n"
-                + "LEFT JOIN genre_films gf ON f.film_id = gf.film_id \n"
-                + "LEFT JOIN genre g ON gf.genre_id = g.genre_id \n"
-                + "LEFT JOIN directors d ON film_by_director.director_id = d.director_id\n"
                 + "ORDER BY YEAR(f.release_date);";
 
-        String sqlLikesSort = "\n" + "SELECT * FROM "
-                + " director_films df\n" + "LEFT JOIN films f ON f.film_id = df.film_id \n"
-                + "LEFT JOIN genre_films gf ON f.film_id = gf.film_id \n"
-                + "LEFT JOIN genre g ON gf.genre_id = g.genre_id \n"
-                + "LEFT JOIN directors d ON df.director_id = d.director_id\n"
-                + "LEFT JOIN likes_film lf ON f.film_id = lf.film_id\n"
-                + "WHERE df.director_id =  :director_id\n"
-                + "group by df.film_id\n"
-                + "ORDER BY COUNT(lf.USER_ID);\n";
+        String sqlYearSortFilmsGenres = "\nSELECT * \n" +
+                "FROM \n"
+                + filmByDirector
+                + "LEFT JOIN genre_films gf ON film_by_director.film_id = gf.film_id \n"
+                + "LEFT JOIN genre g ON gf.genre_id = g.genre_id \n";
 
-        var param = Collections.singletonMap("director_id", id);
 
-        if (jdbcTemplate.query(sqlCheckDir, param, dirMapper).size() == 0)
+        String sqlLikesSortForFilms = "\nSELECT f.FILM_ID, FILM_NAME, DESCRIPTION, MPA_ID, RELEASE_DATE, DURATION_MINUTE \n" +
+                "FROM " + filmByDirector +
+                "LEFT JOIN films f ON f.film_id = film_by_director.film_id " +
+                "LEFT JOIN likes_film lf ON f.film_id = lf.film_id " +
+                "GROUP BY film_by_director.film_id\n" +
+                "ORDER BY COUNT(lf.USER_ID);\n";
+
+
+        Map<String, Object> params = Collections.singletonMap("director_id", id);
+
+        if (jdbcTemplate.query(sqlCheckDir, params, dirMapper).size() == 0)
             throw new ValidationException("Режиссера не существует");
 
-        if (Objects.equals(sortBy, "year")) return jdbcTemplate.query(sqlYearSort, param, filmExtractor);
-        if (Objects.equals(sortBy, "likes")) return jdbcTemplate.query(sqlLikesSort, param, filmExtractor);
+        if (Objects.equals(sortBy, "year")) {
+            return getFilmsByParams(sqlYearSortFilms, sqlYearSortFilmsDir, sqlYearSortFilmsGenres, params);
+        }
+
+        if (Objects.equals(sortBy, "likes")) {
+            return getFilmsByParams(sqlLikesSortForFilms, sqlYearSortFilmsDir, sqlYearSortFilmsGenres, params);
+        }
 
         throw new ValidationException("Неподдерживаемый параметр сортировки");
+    }
+
+    private List<Film> getFilmsByParams(String sqlForFilms, String sqlForDirector, String sqlForGenres, Map<String, Object> params) {
+        List<Film> films = jdbcTemplate.queryForStream(sqlForFilms, params, filmMapper)
+                .collect(Collectors.toList());
+        var dir = jdbcTemplate.query(sqlForDirector, params, new ValuesExtractor<>(dirMapper));
+
+        var gen = jdbcTemplate.query(sqlForGenres, params, new ValuesExtractor<>(genreMapper));
+        for (var film : films) {
+            film.setDirectors(dir.get(film.getId()) == null ? new HashSet<>() : dir.get(film.getId()));
+            film.setGenres(gen.get(film.getId()) == null ? new HashSet<>() : gen.get(film.getId()));
+        }
+        return films;
     }
 
 
