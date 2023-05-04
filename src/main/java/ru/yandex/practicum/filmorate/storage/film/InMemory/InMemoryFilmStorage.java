@@ -47,7 +47,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> createCollectionFilmsById(Collection<Long> filmRecommendations) {
+    public List<Film> createListFilmsById(Collection<Long> filmRecommendations) {
         return null;
     }
 

@@ -143,8 +143,8 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> createCollectionFilmsById(Collection<Long> filmsId) {
-        Collection<Film> films = new ArrayList<>();
+    public List<Film> createListFilmsById(Collection<Long> filmsId) {
+        List<Film> films = new ArrayList<>();
         for (Long id : filmsId) {
             films.add(getFilm(id));
         }

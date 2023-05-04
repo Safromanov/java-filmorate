@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.review;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -14,7 +14,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Repository
 @Slf4j
 public class ReviewDbStorage implements ReviewStorage {
@@ -32,7 +32,7 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public Review add(Review review) {
-        idValidation(review.getFilmId(), review.getUserId());
+        idValidation("filmId, userId", review.getFilmId(), review.getUserId());
         var simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("REVIEWS")
                 .usingGeneratedKeyColumns("REVIEW_ID")
@@ -44,7 +44,7 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public Review update(Review review) {
-        idValidation(review.getFilmId(), review.getUserId());
+        idValidation("filmId, userId", review.getFilmId(), review.getUserId());
         String sql = "UPDATE REVIEWS SET CONTENT = ?, IS_POSITIVE = ? WHERE REVIEW_ID = ?";
         jdbcTemplate.update(sql, review.getContent(), review.getIsPositive(), review.getId());
         log.debug("Обновлён отзыв: " + review);
@@ -53,7 +53,7 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public void deleteReview(long reviewId) {
-        String sql = "DELETE FROM REVIEWS WHERE REVIEW_ID IN (SELECT REVIEW_ID FROM REVIEWS WHERE REVIEW_ID = ?)";
+        String sql = "DELETE FROM REVIEWS WHERE REVIEW_ID = ?";
         jdbcTemplate.update(sql, reviewId);
     }
 
@@ -71,7 +71,7 @@ public class ReviewDbStorage implements ReviewStorage {
         if (getReview(reviewId) == null) {
             throw new ValidationException("Отзыва с id " + reviewId + "не существует");
         }
-        idValidation(reviewId, userId);
+        idValidation("reviewId, userId", reviewId, userId);
         String sql = "MERGE INTO LIKES_REVIEW KEY (REVIEW_ID, USER_ID) VALUES (?, ?, TRUE)";
         jdbcTemplate.update(sql, reviewId, userId);
         updateReviewLikes(reviewId);
@@ -79,7 +79,7 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public void removeLike(long reviewId, long userId) {
-        idValidation(reviewId, userId);
+        idValidation("reviewId, userId", reviewId, userId);
         String sql = "DELETE FROM LIKES_REVIEW WHERE REVIEW_ID = ? AND USER_ID = ?";
         jdbcTemplate.update(sql, reviewId, userId);
         updateReviewLikes(reviewId);
@@ -90,7 +90,7 @@ public class ReviewDbStorage implements ReviewStorage {
         if (getReview(reviewId) == null) {
             throw new ValidationException("Отзыва с id " + reviewId + "не существует");
         }
-        idValidation(reviewId, userId);
+        idValidation("reviewId, userId", reviewId, userId);
         String sql = "MERGE INTO LIKES_REVIEW KEY (REVIEW_ID, USER_ID) VALUES (?, ?, FALSE)";
         jdbcTemplate.update(sql, reviewId, userId);
         updateReviewLikes(reviewId);
@@ -98,7 +98,7 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public void removeDislike(long reviewId, long userId) {
-        idValidation(reviewId, userId);
+        idValidation("reviewId, userId", reviewId, userId);
         String sql = "DELETE FROM LIKES_REVIEW WHERE REVIEW_ID = ? AND USER_ID = ?";
         jdbcTemplate.update(sql, reviewId, userId);
         updateReviewLikes(reviewId);
@@ -131,7 +131,7 @@ public class ReviewDbStorage implements ReviewStorage {
                 .isPositive(rs.getBoolean("IS_POSITIVE"))
                 .userId(rs.getLong("USER_ID"))
                 .filmId(rs.getLong("FILM_ID"))
-                .useful(rs.getLong("USEFUL"))
+                .useful(rs.getInt("USEFUL"))
                 .build();
     }
 
@@ -145,10 +145,10 @@ public class ReviewDbStorage implements ReviewStorage {
         return values;
     }
 
-    private void idValidation(long... ids) {
+    private void idValidation(String paramName, long... ids) {
         for (long id : ids) {
             if (id <= 0) {
-                throw new ValidationException("Передан отрицательный id");
+                throw new ValidationException("Передан отрицательный id для " + paramName);
             }
         }
     }

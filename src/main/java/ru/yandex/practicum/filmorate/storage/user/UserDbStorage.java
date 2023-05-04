@@ -93,7 +93,7 @@ public class UserDbStorage implements UserStorage {
             user.setFriends(relationshipMap);
             return Optional.ofNullable(user);
         } catch (RuntimeException e) {
-            throw new ValidationException("Пользователя под таким id не существует");
+            return Optional.empty();
         }
     }
 
@@ -117,8 +117,8 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public Collection<Long> getFilmRecommendationsId(long id) {
-        getUser(id);
+    public List<Long> getRecommendedFilmsId(long id) {
+        getUser(id).orElseThrow(() -> new ValidationException("Пользователя под таким id не существует"));
         Collection<User> users = findAll();
         if (findAll().isEmpty()) return null;
         Collection<Long> likedFilms = getLikedFilmsLikeId(id);
@@ -139,7 +139,7 @@ public class UserDbStorage implements UserStorage {
                 }
             }
         }
-        return filmsId;
+        return new ArrayList<>(filmsId);
     }
 
     private Collection<Long> getLikedFilmsLikeId(long id) {
@@ -152,7 +152,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void deleteUser(long userId) {
-        getUser(userId);
+        getUser(userId).orElseThrow(() -> new ValidationException("Пользователя под таким id не существует"));
         jdbcTemplate.getJdbcTemplate().update("DELETE FROM likes_film WHERE user_id = ?", userId);
         jdbcTemplate.getJdbcTemplate().update("DELETE FROM friendship WHERE user_id = ? " +
                 "OR friend_id = ?", userId, userId);
