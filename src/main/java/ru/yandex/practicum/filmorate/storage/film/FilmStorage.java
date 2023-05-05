@@ -25,7 +25,7 @@ public interface FilmStorage extends BaseStorage<Film> {
     List<Film> getSortFilmsByDirector(long id, String sortBy);
 
 
-    Collection<Film> searchFilms(Map<String, String> searchMap);
+    List<Film> searchFilms(Map<String, String> searchMap);
 
     List<Film> getCommonFilms(Integer userId, Integer friendId);
 }

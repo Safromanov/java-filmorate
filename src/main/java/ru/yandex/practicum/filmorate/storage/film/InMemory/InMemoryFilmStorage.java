@@ -61,7 +61,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> searchFilms(Map<String, String> searchMap) {
+    public List<Film> searchFilms(Map<String, String> searchMap) {
         return null;
     }
 
