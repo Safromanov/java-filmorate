@@ -158,49 +158,6 @@ public class FilmDbStorage implements FilmStorage {
         var listPopular = jdbcTemplate.query(sqlGetPopularFilms, param,
                 (rs,rowNum) -> getFilm(rs.getInt("FILM_ID")));
         return listPopular.isEmpty() ? new HashSet<>() : new HashSet<>(listPopular);
-
-        /*
-        String sqlFilm1 = "SELECT *\n"
-                + "FROM (\n"
-                + "SELECT f.film_id\n"
-                + "FROM FILMS f\t\n"
-                + "LEFT JOIN LIKES_FILM lf ON f.film_id = lf.film_id \n";
-        String years = "\tEXTRACT(YEAR FROM cast(f.RELEASE_DATE AS date)) IN (:year)\n";
-        String genres = "\tf.FILM_ID IN (\n"
-                + "\tSELECT gf.FILM_ID\n"
-                + "\tFROM GENRE_FILMS gf\n"
-                + "\tWHERE  gf.GENRE_ID = :genreId)\n";
-        String sqlFilm2 = "GROUP BY f.film_id\n"
-                + "ORDER BY COUNT(lf.user_id) DESC, f.film_id\n" + "LIMIT  :size \n"
-                + ") popular_film\n"
-                + "LEFT JOIN films f ON f.film_id = popular_film.film_id\n"
-                + "LEFT JOIN genre_films gf ON f.film_id = gf.film_id\n"
-                + "LEFT JOIN genre g ON gf.genre_id = g.genre_id\n"
-                + "LEFT JOIN director_films df ON f.film_id = df.film_id\n"
-                + "LEFT JOIN directors d ON df.director_id = d.director_id \n";
-
-        String sqlGetPopularFilms = sqlFilm1;
-        if (year != -1 || genreId != -1) {
-            sqlGetPopularFilms += "\tWHERE\n";
-            if (year != -1 && genreId == -1) {
-                sqlGetPopularFilms += years;
-            } else if (year == -1) {
-                sqlGetPopularFilms += genres;
-            } else {
-                sqlGetPopularFilms += years + " AND " + genres;
-            }
-        }
-
-        sqlGetPopularFilms += sqlFilm2;
-        Map<String, Integer> param = Map.of("size", size, "genreId", genreId, "year", year);
-        Set<Film> listPopular = jdbcTemplate.query(sqlGetPopularFilms, param, filmExtractor);
-        if (listPopular.isEmpty()) {
-            listPopular = new HashSet<>();
-        }
-        return listPopular;
-        */
-
-
     }
 
     @Override
@@ -219,38 +176,6 @@ public class FilmDbStorage implements FilmStorage {
         var listPopular = jdbcTemplate.query(sqlGetCommonFilms, param,
                 (rs,rowNum) -> getFilm(rs.getInt("FILM_ID")));
         return listPopular.isEmpty() ? new ArrayList<>() : listPopular;
-
-        /*
-        String sqlGetCommonFilms = "SELECT *\n"
-                + "FROM (\n"
-                + "SELECT commonFilms.*\n"
-                + "FROM (\n"
-                + "\tSELECT filmsUser.*\n"
-                + "\tFROM (\n"
-                + "\t\tSELECT f.* \n"
-                + "\t\tFROM FILMS f \n"
-                + "\t\tLEFT JOIN LIKES_FILM lf ON lf.FILM_ID= f.FILM_ID \n"
-                + "\t\tWHERE lf.USER_ID  = :userId \n"
-                + "\t) filmsUser\n"
-                + "\tLEFT JOIN LIKES_FILM lf ON lf.FILM_ID = filmsUser.FILM_ID\n"
-                + "\tWHERE lf.USER_ID = :friendId \n"
-                + "\t) commonFilms\n"
-                + "\tLEFT JOIN  LIKES_FILM lf ON lf.FILM_ID= commonFilms.FILM_ID \n"
-                + "\tGROUP BY commonFilms.film_id\n"
-                + "\tORDER BY COUNT(lf.USER_ID) DESC, commonFilms.film_id\n"
-                + ") popular_film\n"
-                + "LEFT JOIN films f ON f.film_id = popular_film.film_id\n"
-                + "LEFT JOIN genre_films gf ON f.film_id = gf.film_id\n"
-                + "LEFT JOIN genre g ON gf.genre_id = g.genre_id\n"
-                + "LEFT JOIN director_films df ON f.film_id = df.film_id\n"
-                + "LEFT JOIN directors d ON df.director_id = d.director_id ";
-        var param = Map.of("userId", userId, "friendId", friendId);
-        var listCommon = jdbcTemplate.query(sqlGetCommonFilms, param, filmExtractor);
-        if (listCommon.isEmpty()) {
-            listCommon = new HashSet<>();
-        }
-        return new ArrayList<>(listCommon);
-        */
     }
 
     public List<Film> getSortFilmsByDirector(long id, String sortBy) {
@@ -338,42 +263,5 @@ public class FilmDbStorage implements FilmStorage {
                 "by", stringBy.isBlank() ? "" : stringBy);
         var listSearch = jdbcTemplate.query(sqlSearch, param, (rs,rowNum) -> getFilm(rs.getInt("FILM_ID")));
         return listSearch.isEmpty() ? new ArrayList<>() : listSearch;
-
-    /*    StringBuilder sqlQuery = new StringBuilder();
-        sqlQuery.append("SELECT *\n" +
-                "FROM (\n" +
-                "SELECT f.film_id\n" +
-                "FROM FILMS f\t\n" +
-                "LEFT JOIN LIKES_FILM lf ON f.film_id = lf.film_id \n");
-        if (searchMap.containsKey("title") || searchMap.containsKey("director")) {
-            sqlQuery.append("WHERE f.film_id IN (\n");
-            sqlQuery.append(searchMap.containsKey("title")
-                    ? "SELECT film_id\n" +
-                    "FROM FILMS\n" +
-                    "WHERE LOWER(film_name) LIKE :stringSearch\n"
-                    + (searchMap.containsKey("director") ? "UNION\n" : "")
-                    : "");
-            sqlQuery.append(searchMap.containsKey("director")
-                    ? "SELECT f.film_id\n" + "" +
-                    "FROM FILMS f\n" +
-                    "INNER JOIN director_films df ON f.film_id = df.film_id\n" +
-                    "INNER JOIN directors d ON df.director_id = d.director_id\n" +
-                    "WHERE LOWER(d.director_name) LIKE :stringSearch\n "
-                    : "");
-            sqlQuery.append(")\n");
-        }
-        sqlQuery.append("GROUP BY f.film_id\n" +
-                "ORDER BY COUNT(lf.user_id) DESC, f.film_id\n" +
-                ") search_film\n" +
-                "LEFT JOIN films f ON f.film_id = search_film.film_id\n" +
-                "LEFT JOIN genre_films gf ON f.film_id = gf.film_id\n" +
-                "LEFT JOIN genre g ON gf.genre_id = g.genre_id\n" +
-                "LEFT JOIN director_films df ON f.film_id = df.film_id\n" +
-                "LEFT JOIN directors d ON df.director_id = d.director_id \n");
-
-        String stringSearch = searchMap.values().stream().findAny().orElse("").toLowerCase();
-        var param = Map.of("stringSearch", stringSearch.isBlank() ? "" : "%" + stringSearch + "%");
-        var listSearch = jdbcTemplate.query(sqlQuery.toString(), param, filmExtractor);
-        return new ArrayList<>(listSearch);*/
     }
 }
