@@ -51,18 +51,18 @@ public class DirectorDbImpl implements DirectorDb {
     @Override
     public Director getDirector(long id) {
         String sql = "SELECT * FROM DIRECTORS WHERE DIRECTOR_ID = :DIRECTOR_ID; ";
-        var params = Collections.singletonMap("DIRECTOR_ID", id);
+        Map<String, Long> params = Collections.singletonMap("DIRECTOR_ID", id);
         try {
             return jdbcTemplate.queryForObject(sql, params, directorMapper);
         } catch (RuntimeException e) {
             throw new ValidationException("Режиссёр с таким id не существует");
         }
-
     }
 
     @Override
     public Set<Director> findDirectorFilm(long filmId) {
-        String sql = "SELECT * FROM director_films df INNER JOIN directors d ON d.director_id = df.director_id  " +
+        String sql = "SELECT * FROM director_films df " +
+                "INNER JOIN directors d ON d.director_id = df.director_id  " +
                 "WHERE film_id = :film_id";
         Map<String, Object> params = Collections.singletonMap("film_id", filmId);
         return jdbcTemplate.queryForStream(sql, params, directorMapper)
@@ -72,15 +72,13 @@ public class DirectorDbImpl implements DirectorDb {
     @Override
     public List<Director> findAll() {
         String sql = "SELECT * FROM DIRECTORS";
-
         return jdbcTemplate.query(sql, directorMapper);
-
     }
 
     @Override
     public Set<Director> addDirectorToFilm(long filmId, Set<Director> directors) {
         if (directors == null) return new HashSet<>();
-        var countDirectors = directors.size();
+        int countDirectors = directors.size();
         String sqlGenreInfo = "MERGE INTO director_films(film_id, director_id) VALUES (:film_id, :director_id);";
         SqlParameterSource[] sources = new SqlParameterSource[countDirectors];
         for (var director : directors) {

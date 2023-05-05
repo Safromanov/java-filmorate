@@ -33,15 +33,13 @@ public class FilmDbStorage implements FilmStorage {
     private final RowMapper<Genre> genreMapper;
 
     @Override
-    public Collection<Film> findAll() {
+    public List<Film> findAll() {
         String sqlGetAllFilms = "SELECT * FROM films f ORDER BY FILM_ID \n";
         String sqlGetAllGenres = "SELECT * FROM genre_films gf \n"
                 + "LEFT JOIN genre g ON gf.genre_id = g.genre_id ";
         String sqlGetAllDirectors = "SELECT * FROM director_films df \n"
                 + "LEFT JOIN directors d ON df.director_id = d.director_id ";
         return getFilmsByParams(sqlGetAllFilms, sqlGetAllDirectors, sqlGetAllGenres, null);
-        //   var mapGenre = jdbcTemplate.query(sqlGetAllFilms, filmExtractor);
-        //  return mapGenre;
     }
 
     @Override
@@ -62,7 +60,6 @@ public class FilmDbStorage implements FilmStorage {
 
         film.setId(keyHolder.getKey().longValue());
         return film;
-
     }
 
     @Override
@@ -83,21 +80,6 @@ public class FilmDbStorage implements FilmStorage {
         return film;
     }
 
-//    @Override
-//    public Film getFilm(long id) {
-//        String sqlGetFilm = "SELECT * FROM films f \n"
-//                + "LEFT JOIN genre_films gf ON f.film_id = gf.film_id \n"
-//                + "LEFT JOIN genre g ON gf.genre_id = g.genre_id \n"
-//                + "LEFT JOIN director_films df ON f.film_id = df.film_id \n"
-//                + "LEFT JOIN directors d ON df.director_id = d.director_id \n"
-//                + "WHERE f.film_id = :film_id ;";
-//
-//        var params = Collections.singletonMap("film_id", id);
-//        var film = jdbcTemplate.query(sqlGetFilm, params, filmExtractor).stream().findAny();
-//        if (film.isPresent()) return film.get();
-//        else throw new ValidationException("Неверный id");
-//    }
-
     @Override
     public Film getFilm(long id) {
         String sqlGetFilm = "SELECT * FROM films f WHERE f.film_id = :film_id ;";
@@ -110,18 +92,22 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN  genre g on g.genre_id = gf.genre_id " +
                 "WHERE gf.film_id = :film_id ;";
 
-        var params = Collections.singletonMap("film_id", id);
+        Map<String, Long> params = Collections.singletonMap("film_id", id);
+        Film film;
         try {
-            var film = Optional.of(jdbcTemplate.queryForObject(sqlGetFilm, params, filmMapper));
-            var filmId = film.get().getId();
-            var dir = jdbcTemplate.query(sqlGetDir, params, new ValuesExtractor<>(dirMapper));
-            if (dir.get(filmId) != null) film.get().setDirectors(dir.get(film.get().getId()));
-            var gen = jdbcTemplate.query(sqlGetGenre, params, new ValuesExtractor<>(genreMapper));
-            if (gen.get(filmId) != null) film.get().setGenres(gen.get(film.get().getId()));
-            return film.get();
+            film = jdbcTemplate.queryForObject(sqlGetFilm, params, filmMapper);
         } catch (RuntimeException e) {
-            throw new ValidationException("Несуществующий id");
+            throw new ValidationException("Film Id doesn't exist");
         }
+        long filmId = film.getId();
+        Map<Long, Set<Director>> directors = jdbcTemplate.query(sqlGetDir, params, new ValuesExtractor<>(dirMapper));
+        if (directors.get(filmId) != null)
+            film.setDirectors(directors.get(film.getId()));
+
+        Map<Long, Set<Genre>> genres = jdbcTemplate.query(sqlGetGenre, params, new ValuesExtractor<>(genreMapper));
+        if (genres.get(filmId) != null)
+            film.setGenres(genres.get(film.getId()));
+        return film;
     }
 
     @Override
@@ -154,9 +140,6 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public void deleteFilm(long filmId) {
         getFilm(filmId);
-        jdbcTemplate.getJdbcTemplate().update("DELETE FROM likes_film WHERE film_id = ?", filmId);
-        jdbcTemplate.getJdbcTemplate().update("DELETE FROM genre_films WHERE film_id = ?", filmId);
-        jdbcTemplate.getJdbcTemplate().update("DELETE FROM reviews WHERE film_id = ?", filmId);
         jdbcTemplate.getJdbcTemplate().update("DELETE FROM films WHERE film_id = ?", filmId);
     }
 
@@ -169,11 +152,12 @@ public class FilmDbStorage implements FilmStorage {
                 + "LEFT JOIN LIKES_FILM lf ON f.film_id = lf.film_id \n";
         String years = "\tEXTRACT(YEAR FROM cast(f.RELEASE_DATE AS date)) IN (:year)\n";
         String genres = "\tf.FILM_ID IN (\n"
-                + "\tSELECT gf.FILM_ID\n"
-                + "\tFROM GENRE_FILMS gf\n"
-                + "\tWHERE  gf.GENRE_ID = :genreId)\n";
+                + "    SELECT gf.FILM_ID\n"
+                + "    FROM GENRE_FILMS gf\n"
+                + "    WHERE  gf.GENRE_ID = :genreId)\n";
         String sqlFilm2 = "GROUP BY f.film_id\n"
-                + "ORDER BY COUNT(lf.user_id) DESC, f.film_id\n" + "LIMIT  :size \n"
+                + "ORDER BY COUNT(lf.user_id) DESC, f.film_id\n"
+                + "LIMIT  :size \n"
                 + ") popular_film\n"
                 + "LEFT JOIN films f ON f.film_id = popular_film.film_id\n"
                 + "LEFT JOIN genre_films gf ON f.film_id = gf.film_id\n"
@@ -183,7 +167,7 @@ public class FilmDbStorage implements FilmStorage {
 
         String sqlGetPopularFilms = sqlFilm1;
         if (year != -1 || genreId != -1) {
-            sqlGetPopularFilms += "\tWHERE\n";
+            sqlGetPopularFilms += "    WHERE\n";
             if (year != -1 && genreId == -1) {
                 sqlGetPopularFilms += years;
             } else if (year == -1) {
@@ -194,8 +178,8 @@ public class FilmDbStorage implements FilmStorage {
         }
 
         sqlGetPopularFilms += sqlFilm2;
-        var param = Map.of("size", size, "genreId", genreId, "year", year);
-        var listPopular = jdbcTemplate.query(sqlGetPopularFilms, param, filmExtractor);
+        Map<String, Integer> param = Map.of("size", size, "genreId", genreId, "year", year);
+        Set<Film> listPopular = jdbcTemplate.query(sqlGetPopularFilms, param, filmExtractor);
         if (listPopular.isEmpty()) {
             listPopular = new HashSet<>();
         }
@@ -204,70 +188,73 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {
-        String sqlGetCommonFilms = "SELECT *\n"
-                + "FROM (\n"
-                + "SELECT commonFilms.*\n"
-                + "FROM (\n"
-                + "\tSELECT filmsUser.*\n"
-                + "\tFROM (\n"
-                + "\t\tSELECT f.* \n"
-                + "\t\tFROM FILMS f \n"
-                + "\t\tLEFT JOIN LIKES_FILM lf ON lf.FILM_ID= f.FILM_ID \n"
-                + "\t\tWHERE lf.USER_ID  = :userId \n"
-                + "\t) filmsUser\n"
-                + "\tLEFT JOIN LIKES_FILM lf ON lf.FILM_ID = filmsUser.FILM_ID\n"
-                + "\tWHERE lf.USER_ID = :friendId \n"
-                + "\t) commonFilms\n"
-                + "\tLEFT JOIN  LIKES_FILM lf ON lf.FILM_ID= commonFilms.FILM_ID \n"
-                + "\tGROUP BY commonFilms.film_id\n"
-                + "\tORDER BY COUNT(lf.USER_ID) DESC, commonFilms.film_id\n"
-                + ") popular_film\n"
-                + "LEFT JOIN films f ON f.film_id = popular_film.film_id\n"
-                + "LEFT JOIN genre_films gf ON f.film_id = gf.film_id\n"
-                + "LEFT JOIN genre g ON gf.genre_id = g.genre_id\n"
-                + "LEFT JOIN director_films df ON f.film_id = df.film_id\n"
-                + "LEFT JOIN directors d ON df.director_id = d.director_id ";
-        var param = Map.of("userId", userId, "friendId", friendId);
-        var listCommon = jdbcTemplate.query(sqlGetCommonFilms, param, filmExtractor);
-        if (listCommon.isEmpty()) {
-            listCommon = new HashSet<>();
-        }
-        return new ArrayList<>(listCommon);
+        String sqlGetCommonFilms =
+                "SELECT f.FILM_ID, FILM_NAME, DESCRIPTION, MPA_ID, RELEASE_DATE, DURATION_MINUTE FROM\n" +
+                        "   (SELECT lf.film_id\n" +
+                        "   FROM (\n" +
+                        "       SELECT FILM_ID FROM LIKES_FILM\n" +
+                        "       WHERE USER_ID  = :userId OR USER_ID = :friendId\n" +
+                        "       GROUP BY FILM_ID\n" +
+                        "       HAVING COUNT(USER_ID) = 2\n" +
+                        "       ) commonFilms\n" +
+                        "   LEFT JOIN  LIKES_FILM lf ON lf.FILM_ID = commonFilms.FILM_ID\n" +
+                        "   GROUP BY commonFilms.film_id\n" +
+                        "   ORDER BY COUNT(lf.USER_ID) DESC, commonFilms.film_id) popular_film\n" +
+                        "LEFT JOIN films f ON f.film_id = popular_film.film_id";
+
+        String sqlGetGenreCommonFilms =
+                "SELECT commonFilms.FILM_ID, G.GENRE_ID, GENRE_NAME  FROM (\n" +
+                        "    SELECT FILM_ID FROM LIKES_FILM\n" +
+                        "    WHERE USER_ID  = :userId OR USER_ID = :friendId\n" +
+                        "    GROUP BY FILM_ID\n" +
+                        "    HAVING COUNT(USER_ID) = 2" +
+                        ") commonFilms\n" +
+                        "LEFT JOIN GENRE_FILMS f ON f.film_id = commonFilms.film_id\n" +
+                        "LEFT JOIN GENRE G on G.GENRE_ID = f.GENRE_ID;";
+
+        String sqlGetDirectorsCommonFilms =
+                "SELECT commonFilms.FILM_ID, d.DIRECTOR_ID, DIRECTOR_NAME FROM (\n" +
+                        "    SELECT FILM_ID FROM LIKES_FILM\n" +
+                        "    WHERE USER_ID  = :userId OR USER_ID = :friendId\n" +
+                        "    GROUP BY FILM_ID\n" +
+                        "    HAVING COUNT(USER_ID) = 2" +
+                        ") commonFilms\n" +
+                        "LEFT JOIN DIRECTOR_FILMS df ON df.film_id = commonFilms.film_id\n" +
+                        "LEFT JOIN DIRECTORS d on d.director_id = df.director_id;";
+
+        Map<String, Object> param = Map.of("userId", userId, "friendId", friendId);
+        return getFilmsByParams(sqlGetCommonFilms, sqlGetDirectorsCommonFilms, sqlGetGenreCommonFilms, param);
     }
 
     public List<Film> getSortFilmsByDirector(long id, String sortBy) {
 
         String sqlCheckDir = "SELECT * FROM directors WHERE director_id = :director_id";
 
-        String filmByDirector = "(SELECT film_id, director_id FROM director_films\n"
-                + "WHERE director_id =  :director_id"
-                + ") film_by_director\n";
+        String sqlGetDirectorFilms = "\nSELECT * \n" +
+                "FROM (SELECT film_id, director_id FROM director_films\n" +
+                "   WHERE director_id =  :director_id ) film_by_director\n" +
+                "LEFT JOIN directors d ON film_by_director.director_id = d.director_id \n";
 
-        String sqlYearSortFilmsDir = "\nSELECT * \n" +
-                "FROM \n"
-                + filmByDirector
-                + "LEFT JOIN directors d ON film_by_director.director_id = d.director_id \n";
+        String sqlGetSortByYearDirectorFilms = "\nSELECT * \n" +
+                "FROM (SELECT film_id, director_id FROM director_films\n" +
+                "   WHERE director_id =  :director_id ) film_by_director\n" +
+                "LEFT JOIN films f ON f.film_id = film_by_director.film_id \n" +
+                "ORDER BY YEAR(f.release_date);";
 
-        String sqlYearSortFilms = "\nSELECT * \n" +
-                "FROM \n"
-                + filmByDirector
-                + "LEFT JOIN films f ON f.film_id = film_by_director.film_id \n"
-                + "ORDER BY YEAR(f.release_date);";
+        String sqlGetGenreFilmsFromDirector = "\nSELECT * \n" +
+                "FROM (SELECT film_id, director_id FROM director_films\n" +
+                "   WHERE director_id =  :director_id ) film_by_director\n" +
+                "LEFT JOIN genre_films gf ON film_by_director.film_id = gf.film_id \n" +
+                "LEFT JOIN genre g ON gf.genre_id = g.genre_id \n";
 
-        String sqlYearSortFilmsGenres = "\nSELECT * \n" +
-                "FROM \n"
-                + filmByDirector
-                + "LEFT JOIN genre_films gf ON film_by_director.film_id = gf.film_id \n"
-                + "LEFT JOIN genre g ON gf.genre_id = g.genre_id \n";
-
-
-        String sqlLikesSortForFilms = "\nSELECT f.FILM_ID, FILM_NAME, DESCRIPTION, MPA_ID, RELEASE_DATE, DURATION_MINUTE \n" +
-                "FROM " + filmByDirector +
+        String sqlGetSortByLikesDirectorFilms = "\nSELECT f.FILM_ID, FILM_NAME, DESCRIPTION, MPA_ID, " +
+                "RELEASE_DATE, DURATION_MINUTE \n" +
+                "FROM (SELECT film_id, director_id FROM director_films\n" +
+                "   WHERE director_id =  :director_id ) film_by_director\n" +
                 "LEFT JOIN films f ON f.film_id = film_by_director.film_id " +
                 "LEFT JOIN likes_film lf ON f.film_id = lf.film_id " +
                 "GROUP BY film_by_director.film_id\n" +
                 "ORDER BY COUNT(lf.USER_ID);\n";
-
 
         Map<String, Object> params = Collections.singletonMap("director_id", id);
 
@@ -275,29 +262,31 @@ public class FilmDbStorage implements FilmStorage {
             throw new ValidationException("Режиссера не существует");
 
         if (Objects.equals(sortBy, "year")) {
-            return getFilmsByParams(sqlYearSortFilms, sqlYearSortFilmsDir, sqlYearSortFilmsGenres, params);
+            return getFilmsByParams(sqlGetSortByYearDirectorFilms, sqlGetDirectorFilms,
+                    sqlGetGenreFilmsFromDirector, params);
         }
 
         if (Objects.equals(sortBy, "likes")) {
-            return getFilmsByParams(sqlLikesSortForFilms, sqlYearSortFilmsDir, sqlYearSortFilmsGenres, params);
+            return getFilmsByParams(sqlGetSortByLikesDirectorFilms, sqlGetDirectorFilms,
+                    sqlGetGenreFilmsFromDirector, params);
         }
 
         throw new ValidationException("Неподдерживаемый параметр сортировки");
     }
 
     private List<Film> getFilmsByParams(String sqlForFilms, String sqlForDirector, String sqlForGenres, Map<String, Object> params) {
-        List<Film> films = jdbcTemplate.queryForStream(sqlForFilms, params, filmMapper)
-                .collect(Collectors.toList());
-        var dir = jdbcTemplate.query(sqlForDirector, params, new ValuesExtractor<>(dirMapper));
+        List<Film> films = jdbcTemplate.queryForStream(sqlForFilms, params, filmMapper).collect(Collectors.toList());
 
-        var gen = jdbcTemplate.query(sqlForGenres, params, new ValuesExtractor<>(genreMapper));
-        for (var film : films) {
-            film.setDirectors(dir.get(film.getId()) == null ? new HashSet<>() : dir.get(film.getId()));
-            film.setGenres(gen.get(film.getId()) == null ? new HashSet<>() : gen.get(film.getId()));
+        Map<Long, Set<Director>> directors = jdbcTemplate.query(sqlForDirector, params, new ValuesExtractor<>(dirMapper));
+
+        Map<Long, Set<Genre>> genres = jdbcTemplate.query(sqlForGenres, params, new ValuesExtractor<>(genreMapper));
+
+        for (Film film : films) {
+            film.setDirectors(directors.get(film.getId()) == null ? new HashSet<>() : directors.get(film.getId()));
+            film.setGenres(genres.get(film.getId()) == null ? new HashSet<>() : genres.get(film.getId()));
         }
         return films;
     }
-
 
     @Override
     public Collection<Film> searchFilms(Map<String, String> searchMap) {
@@ -333,8 +322,8 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN director_films df ON f.film_id = df.film_id\n" +
                 "LEFT JOIN directors d ON df.director_id = d.director_id \n");
         String stringSearch = searchMap.values().stream().findAny().orElse("").toLowerCase();
-        var param = Map.of("stringSearch", stringSearch.isBlank() ? "" : "%" + stringSearch + "%");
-        var listSearch = jdbcTemplate.query(sqlQuery.toString(), param, filmExtractor);
+        Map<String, String> param = Map.of("stringSearch", stringSearch.isBlank() ? "" : "%" + stringSearch + "%");
+        Set<Film> listSearch = jdbcTemplate.query(sqlQuery.toString(), param, filmExtractor);
         return new ArrayList<>(listSearch);
     }
 }

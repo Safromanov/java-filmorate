@@ -45,7 +45,7 @@ public class GenreDBImpl implements GenreDB {
 
     public Set<Genre> addGenresToFilm(long filmId, Set<Genre> genres) {
         if (genres == null) return new HashSet<>();
-        var countGenres = genres.size();
+        int countGenres = genres.size();
         String sqlGenreInfo = "INSERT INTO genre_films(film_id, genre_id) VALUES (:film_id, :genre_id);";
         SqlParameterSource[] sources = new SqlParameterSource[countGenres];
         for (var genre : genres) {

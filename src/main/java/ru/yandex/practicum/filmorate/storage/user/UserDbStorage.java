@@ -25,7 +25,7 @@ public class UserDbStorage implements UserStorage {
     private final RowMapper<User> userMapper;
 
     @Override
-    public Collection<User> findAll() {
+    public List<User> findAll() {
         String sql = "select * from users";
         return jdbcTemplate.query(sql, userMapper);
     }
@@ -103,16 +103,16 @@ public class UserDbStorage implements UserStorage {
                 "SELECT U.USER_ID, U.EMAIL, U.LOGIN, U.USER_NAME, U.BIRTHDAY \n" +
                 "FROM (\n" +
                 "SELECT b.friend_id  FROM ( \n" +
-                "\tSELECT f.FRIEND_ID\n" +
-                "\tFROM FRIENDSHIP F\n" +
-                "\tWHERE f.USER_ID = :user_id) a\n" +
-                "\tINNER JOIN ( \n" +
-                "\tSELECT f.FRIEND_ID\n" +
-                "\tFROM FRIENDSHIP F\n" +
-                "\tWHERE f.USER_ID = :friend_id ) b ON a.friend_id = b.friend_id\t\n" +
+                "   SELECT f.FRIEND_ID\n" +
+                "   FROM FRIENDSHIP F\n" +
+                "   WHERE f.USER_ID = :user_id) a \n" +
+                "   INNER JOIN ( \n" +
+                "   SELECT f.FRIEND_ID \n" +
+                "   FROM FRIENDSHIP F \n" +
+                "   WHERE f.USER_ID = :friend_id ) b ON a.friend_id = b.friend_id \n" +
                 ")  common \n" +
                 "LEFT JOIN USERS U ON common.FRIEND_ID = U.USER_ID;";
-        var params = Map.of("user_id", userId, "friend_id", friendId);
+        Map<String, Long> params = Map.of("user_id", userId, "friend_id", friendId);
         return jdbcTemplate.query(sqlGetCommonFriends, params, userMapper);
     }
 
@@ -153,12 +153,6 @@ public class UserDbStorage implements UserStorage {
     @Override
     public void deleteUser(long userId) {
         getUser(userId).orElseThrow(() -> new ValidationException("Пользователя под таким id не существует"));
-        jdbcTemplate.getJdbcTemplate().update("DELETE FROM likes_film WHERE user_id = ?", userId);
-        jdbcTemplate.getJdbcTemplate().update("DELETE FROM friendship WHERE user_id = ? " +
-                "OR friend_id = ?", userId, userId);
-        jdbcTemplate.getJdbcTemplate().update("DELETE FROM likes_review WHERE user_id = ?", userId);
-        jdbcTemplate.getJdbcTemplate().update("DELETE FROM reviews WHERE user_id = ?", userId);
-        jdbcTemplate.getJdbcTemplate().update("DELETE FROM event_feed WHERE user_id = ?", userId);
         jdbcTemplate.getJdbcTemplate().update("DELETE FROM users WHERE user_id = ?", userId);
     }
 }

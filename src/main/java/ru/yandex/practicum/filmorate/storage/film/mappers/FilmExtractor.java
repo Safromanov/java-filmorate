@@ -24,16 +24,15 @@ public class FilmExtractor implements ResultSetExtractor<Set<Film>> {
     private final RowMapper<Genre> genreMapper;
     private final RowMapper<Director> directorMapper;
 
-
     @Override
     public Set<Film> extractData(ResultSet rs) throws SQLException, DataAccessException {
         Set<Film> data = new LinkedHashSet<>();
         Map<Long, Film> mapId = new HashMap<>();
         Film film;
         while (rs.next()) {
-            var genre = genreMapper.mapRow(rs, 1);
-            var director = directorMapper.mapRow(rs, 1);
-            var filmId = rs.getLong("film_id");
+            Genre genre = genreMapper.mapRow(rs, 1);
+            Director director = directorMapper.mapRow(rs, 1);
+            long filmId = rs.getLong("film_id");
             if (mapId.containsKey(filmId))
                 film = mapId.get(filmId);
             else {

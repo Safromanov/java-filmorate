@@ -8,9 +8,8 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.storage.film.mappers.ReviewMapper;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -20,11 +19,12 @@ import java.util.stream.Collectors;
 public class ReviewDbStorage implements ReviewStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final ReviewMapper reviewMapper;
 
     @Override
-    public Collection<Review> findAll() {
+    public List<Review> findAll() {
         String sql = "SELECT * FROM reviews";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> makeReview(rs))
+        return jdbcTemplate.query(sql, reviewMapper)
                 .stream()
                 .sorted(Comparator.comparing(Review::getUseful).reversed())
                 .collect(Collectors.toList());
@@ -60,7 +60,7 @@ public class ReviewDbStorage implements ReviewStorage {
     @Override
     public Collection<Review> findFilmReviews(long filmId, int count) {
         String sql = "SELECT * FROM reviews WHERE FILM_ID = ? LIMIT ?";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> makeReview(rs), filmId, count)
+        return jdbcTemplate.query(sql, reviewMapper, filmId, count)
                 .stream()
                 .sorted(Comparator.comparing(Review::getUseful).reversed())
                 .collect(Collectors.toList());
@@ -116,23 +116,12 @@ public class ReviewDbStorage implements ReviewStorage {
 
     public Review getReview(long reviewId) {
         String sql = "SELECT * FROM REVIEWS WHERE REVIEW_ID = ?";
-        List<Review> film = jdbcTemplate.query(sql, (rs, rowNum) -> makeReview(rs), reviewId);
+        List<Review> film = jdbcTemplate.query(sql, reviewMapper, reviewId);
         if (!film.isEmpty()) {
             return film.get(0);
         } else {
             throw new ValidationException("Отзыва с id: " + reviewId + " не существует");
         }
-    }
-
-    private Review makeReview(ResultSet rs) throws SQLException {
-        return Review.builder()
-                .id(rs.getLong("REVIEW_ID"))
-                .content(rs.getString("CONTENT"))
-                .isPositive(rs.getBoolean("IS_POSITIVE"))
-                .userId(rs.getLong("USER_ID"))
-                .filmId(rs.getLong("FILM_ID"))
-                .useful(rs.getInt("USEFUL"))
-                .build();
     }
 
     private Map<String, Object> reviewToMap(Review review) {

@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import ru.yandex.practicum.filmorate.storage.user.friends.FriendsStorage;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,7 +42,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Collection<User> findAll() {
+    public List<User> findAll() {
         return userStorage.findAll();
     }
 

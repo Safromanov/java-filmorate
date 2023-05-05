@@ -20,21 +20,19 @@ public class ValuesExtractor<T> implements ResultSetExtractor<Map<Long, Set<T>>>
         this.rowMapper = rowMapper;
     }
 
-
     @Override
     public Map<Long, Set<T>> extractData(ResultSet rs) throws SQLException, DataAccessException {
-
         Map<Long, Set<T>> valuesByFilmId = new HashMap<>();
         while (rs.next()) {
-            var value = rowMapper.mapRow(rs, 1);
-            var filmId = rs.getLong(1);
-            if (valuesByFilmId.containsKey(filmId))
-                valuesByFilmId.get(filmId).add(value);
+            T value = rowMapper.mapRow(rs, 1);
+            long id = rs.getLong(1);
+            if (valuesByFilmId.containsKey(id))
+                valuesByFilmId.get(id).add(value);
             else {
-                valuesByFilmId.put(filmId, new LinkedHashSet<>() {
+                valuesByFilmId.put(id, new LinkedHashSet<>() {
                 });
                 if (value != null) {
-                    valuesByFilmId.get(filmId).add(value);
+                    valuesByFilmId.get(id).add(value);
                 }
             }
         }

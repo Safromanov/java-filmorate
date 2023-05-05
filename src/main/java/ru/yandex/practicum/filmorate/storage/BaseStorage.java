@@ -1,10 +1,10 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import java.util.Collection;
+import java.util.List;
 
 public interface BaseStorage<T> {
 
-    Collection<T> findAll();
+    List<T> findAll();
 
     T add(T t);
 

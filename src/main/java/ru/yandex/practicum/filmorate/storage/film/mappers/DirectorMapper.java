@@ -12,8 +12,8 @@ public class DirectorMapper implements RowMapper<Director> {
     @Override
     public Director mapRow(ResultSet resultSet, int i) throws SQLException {
         if (resultSet.getString("director_id") == null) return null;
-        var id = Integer.parseInt(resultSet.getString("director_id"));
-        var name = resultSet.getString("director_name");
+        long id = Long.parseLong(resultSet.getString("director_id"));
+        String name = resultSet.getString("director_name");
         return Director.builder()
                 .id(id)
                 .name(name)

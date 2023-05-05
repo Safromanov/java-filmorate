@@ -27,5 +27,4 @@ public class User {
     private Map<Long, Boolean> friends;
     @JsonIgnore
     private Set<Long> likedFilms;
-
 }

@@ -8,18 +8,19 @@ import ru.yandex.practicum.filmorate.model.MPA;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.util.HashSet;
 
 @Component
 public class FilmMapper implements RowMapper<Film> {
     @Override
     public Film mapRow(ResultSet resultSet, int i) throws SQLException {
-        var id = Long.parseLong(resultSet.getString("film_id"));
-        var filmName = resultSet.getString("film_name");
-        var description = resultSet.getString("description");
-        var duration = Long.parseLong(resultSet.getString("duration_minute"));
-        var mpaId = Integer.parseInt(resultSet.getString("mpa_id"));
-        var releaseDate = resultSet.getDate("release_date").toLocalDate();
+        long id = Long.parseLong(resultSet.getString("film_id"));
+        String filmName = resultSet.getString("film_name");
+        String description = resultSet.getString("description");
+        long duration = Long.parseLong(resultSet.getString("duration_minute"));
+        int mpaId = Integer.parseInt(resultSet.getString("mpa_id"));
+        LocalDate releaseDate = resultSet.getDate("release_date").toLocalDate();
         return Film.builder()
                 .id(id)
                 .name(filmName)
@@ -31,5 +32,4 @@ public class FilmMapper implements RowMapper<Film> {
                 .directors(new HashSet<>())
                 .build();
     }
-
 }

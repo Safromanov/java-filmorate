@@ -16,7 +16,7 @@ import java.util.Set;
 @AllArgsConstructor
 public class InMemoryFilmStorage implements FilmStorage {
 
-    public Collection<Film> findAll() {
+    public List<Film> findAll() {
         return null;
     }
 

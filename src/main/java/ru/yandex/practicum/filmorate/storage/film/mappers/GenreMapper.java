@@ -14,8 +14,8 @@ public class GenreMapper implements RowMapper<Genre> {
     @Override
     public Genre mapRow(ResultSet resultSet, int i) throws SQLException {
         if (resultSet.getString("genre_id") == null) return null;
-        var id = Integer.parseInt(resultSet.getString("genre_id"));
-        var name = resultSet.getString("genre_name");
+        int id = Integer.parseInt(resultSet.getString("genre_id"));
+        String name = resultSet.getString("genre_name");
         return Genre.builder()
                 .id(id)
                 .name(name)
