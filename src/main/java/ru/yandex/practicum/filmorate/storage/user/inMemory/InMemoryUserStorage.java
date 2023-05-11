@@ -8,7 +8,10 @@ import ru.yandex.practicum.filmorate.model.GeneratorId;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Repository
@@ -16,17 +19,16 @@ import java.util.*;
 public class InMemoryUserStorage implements UserStorage {
 
     private final Map<Long, User> users;
-
     private final GeneratorId generatorId;
 
 
-    public Collection<User> findAll() {
+    public List<User> findAll() {
         log.debug("Текущее количество пользователей: {}", users.size());
-        return users.values();
+        return new ArrayList<>(users.values());
     }
 
     @Override
-    public  Optional<User> getUser(long id) {
+    public Optional<User> getUser(long id) {
         var user = Optional.of(users.get(id));
         return user;
     }
@@ -48,6 +50,17 @@ public class InMemoryUserStorage implements UserStorage {
             if (friendsAnother.contains(idFriendOfOne))
                 commonFriends.add(users.get(idFriendOfOne));
         return commonFriends;
+    }
+
+    @Override
+    public void deleteUser(long userId) {
+        getUser(userId);
+        users.remove(userId);
+    }
+
+    @Override
+    public List<Long> getRecommendedFilmsId(long id) {
+        return null;
     }
 
     @Override
@@ -73,5 +86,4 @@ public class InMemoryUserStorage implements UserStorage {
     private void changeEmptyUserName(User user) {
         if (user.getName() == null || user.getName().isBlank()) user.setName(user.getLogin());
     }
-
 }

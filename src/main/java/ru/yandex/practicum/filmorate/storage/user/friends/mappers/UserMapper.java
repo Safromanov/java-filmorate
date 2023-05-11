@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage.user.mappers;
+package ru.yandex.practicum.filmorate.storage.user.friends.mappers;
 
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -25,5 +25,4 @@ public class UserMapper implements RowMapper<User> {
                 .birthday(birthday)
                 .build();
     }
-
 }

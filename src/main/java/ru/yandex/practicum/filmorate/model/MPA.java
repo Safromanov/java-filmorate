@@ -23,7 +23,6 @@ public enum MPA {
     @Id
     @Getter
     final int id;
-
     @Getter
     final String name;
 
@@ -35,8 +34,4 @@ public enum MPA {
             throw new NoSuchElementException("Неверный возрастной рейтинг");
         }
     }
-
 }
-
-
-

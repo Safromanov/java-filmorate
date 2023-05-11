@@ -25,7 +25,6 @@ public class ErrorHandler {
         return List.of(e.getMessage());
     }
 
-
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public List<String> handleValidationError(ObjectNotFoundException e) {

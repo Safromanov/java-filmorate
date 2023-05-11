@@ -3,17 +3,17 @@ package ru.yandex.practicum.filmorate.storage.film.GenreDb;
 import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.List;
+import java.util.Set;
 
 public interface GenreDB {
 
     Genre getGenre(int id);
 
-    List<Genre> findGenresFilm(long filmId);
+    Set<Genre> findGenresFilm(long filmId);
 
     List<Genre> findAll();
 
-    List<Genre> addGenresToFilm(long filmId, List<Genre> genres);
+    Set<Genre> addGenresToFilm(long filmId, Set<Genre> genres);
 
-    List<Genre> updateGenresFilm(long filmId, List<Genre> genres);
-
+    Set<Genre> updateGenresFilm(long filmId, Set<Genre> genres);
 }

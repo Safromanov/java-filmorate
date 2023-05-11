@@ -13,5 +13,4 @@ public class GeneratorId {
     public long getId() {
         return ++id;
     }
-
 }

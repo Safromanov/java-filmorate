@@ -13,5 +13,4 @@ class FilmReleaseDateValidator implements ConstraintValidator<FilmReleaseDate, L
     public boolean isValid(LocalDate date, ConstraintValidatorContext context) {
         return date.isAfter(FIRST_FILM_DATE);
     }
-
 }

@@ -16,5 +16,4 @@ public @interface FilmDuration {
     Class<?>[] groups() default {};
 
     Class<? extends Payload>[] payload() default {};
-
 }
